@@ -12,9 +12,12 @@ public class FlipCard : MonoBehaviour {
     float waitTime;
     bool isAnimationProcessing = false;
 
+    public Quaternion originalRotationValue;
+
 	// Use this for initialization
 	void Start () {
         waitTime = 1.0f / fps;
+        originalRotationValue = transform.rotation;
 	}
 	
 	// Update is called once per frame
@@ -24,7 +27,7 @@ public class FlipCard : MonoBehaviour {
 
     void OnMouseDown()
     {
-        if (isAnimationProcessing)
+        if (isAnimationProcessing || isFaceUp)
         {
             return;
         }
@@ -56,8 +59,17 @@ public class FlipCard : MonoBehaviour {
             yield return new WaitForSeconds(waitTime);
         }
 
+        CameraScript manager = GameObject.FindWithTag("Manager").GetComponent<CameraScript>();
+        manager.cardCounter();
+
         isFaceUp = !isFaceUp;
         isAnimationProcessing = false;
+    }
+    public void resetCard()
+    {
+        transform.rotation = Quaternion.Slerp(transform.rotation, originalRotationValue, Time.time * 1.0f);
+        isFaceUp = false;
+        GetComponentInChildren<RandomCard>().randomizeCards();
     }
 
 }

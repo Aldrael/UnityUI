@@ -19,10 +19,7 @@ public class RandomCard : MonoBehaviour {
         backcard = GameObject.Find("CardBack").GetComponent<SpriteRenderer>().sprite;
 
         spriteRenderer = GetComponent<SpriteRenderer>(); // we are accessing the SpriteRenderer that is attached to the Gameobject
-        index = 0;
-        spriteRenderer.sprite = cards[index];
-
-        setNewBounds();
+        randomizeCards();
 
         gameObject.tag = "Card";
 	}
@@ -60,4 +57,5 @@ public class RandomCard : MonoBehaviour {
         index = Random.Range(0, cards.Length - 1);
         ChangeSprite();
     }
+
 }
