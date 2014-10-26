@@ -4,7 +4,7 @@ using System.Collections;
 public class FlipCard : MonoBehaviour {
 
     public int fps = 60;
-    public float rotateDegreePerSecond = 180f;
+    public float rotateDegreePerSecond;
     public bool isFaceUp = false;
 
     const float FLIP_LIMIT_DEGREE = 180f;
@@ -17,6 +17,7 @@ public class FlipCard : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         waitTime = 1.0f / fps;
+        rotateDegreePerSecond = 180f;
         originalRotationValue = transform.rotation;
 	}
 	
@@ -43,16 +44,12 @@ public class FlipCard : MonoBehaviour {
         {
   
             float degree = rotateDegreePerSecond * Time.deltaTime;
-            if (isFaceUp)
-            {
-                degree = -degree;
-            }
 
             transform.Rotate(new Vector3(0, degree, 0));
 
             if (FLIP_LIMIT_DEGREE < transform.eulerAngles.y)
             {
-                transform.Rotate(new Vector3(0, -degree, 0));
+                transform.Rotate(new Vector3(0, -(transform.eulerAngles.y - FLIP_LIMIT_DEGREE), 0));
                 done = true;
             }
 
@@ -70,6 +67,11 @@ public class FlipCard : MonoBehaviour {
         transform.rotation = Quaternion.Slerp(transform.rotation, originalRotationValue, Time.time * 1.0f);
         isFaceUp = false;
         GetComponentInChildren<RandomCard>().randomizeCards();
+    }
+
+    public void SpeedSlide(float speed)
+    {
+        rotateDegreePerSecond = speed;
     }
 
 }

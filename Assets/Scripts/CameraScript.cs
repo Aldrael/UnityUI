@@ -105,4 +105,12 @@ public class CameraScript : MonoBehaviour {
         toggleAllCards();
     }
 
+    public void speedChangeAllCards(float speed)
+    {
+        foreach (GameObject card in cards)
+        {
+            card.GetComponent<FlipCard>().SpeedSlide(speed);
+        }
+    }
+
 }
