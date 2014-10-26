@@ -57,7 +57,8 @@ public class FlipCard : MonoBehaviour {
         }
 
         CameraScript manager = GameObject.FindWithTag("Manager").GetComponent<CameraScript>();
-        manager.cardCounter();
+        int cardObtained = GetComponentInChildren<RandomCard>().Index;
+        manager.cardCounter(cardObtained);
 
         isFaceUp = !isFaceUp;
         isAnimationProcessing = false;
