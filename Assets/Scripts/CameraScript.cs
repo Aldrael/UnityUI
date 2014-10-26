@@ -7,11 +7,9 @@ public class CameraScript : MonoBehaviour {
     private bool mute;
     private float current_volume;
     public GameObject[] cards;
-    public GameObject basecard_holder;
     public GameObject doneholder;
-    public GameObject newcardholder;
-    public List<int> cardsObtained;
     public int cards_up {get; set;}
+    public List<int> cardsObtained;
   
 	// Use this for initialization
 	void Start () {
@@ -22,21 +20,7 @@ public class CameraScript : MonoBehaviour {
         doneholder.GetComponent<DoneButton>().toggleDone();
         toggleAllCards();
         cardsObtained = new List<int>();
-        DontDestroyOnLoad(this);
-        DontDestroyOnLoad(doneholder);
 	}
-
-    void OnLevelWasLoaded(int level)
-    {
-        /*
-        if (level == 0)
-        {
-            doneholder = GameObject.FindWithTag("Donebutton");
-            GameObject initDone = doneholder;
-            initDone.GetComponent<DoneButton>().toggleDone();
-        }
-        */
-    }
 
     void Update()
     {
@@ -61,6 +45,7 @@ public class CameraScript : MonoBehaviour {
 
     public void ChangeScene(int scene)
     {
+        GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>().saveCards(cardsObtained);
         Application.LoadLevel(scene);
     }
 
@@ -77,7 +62,7 @@ public class CameraScript : MonoBehaviour {
 
     public void randomizeAllCards()
     {
-        cards = GameObject.FindGameObjectsWithTag("Card");
+       // cards = GameObject.FindGameObjectsWithTag("Card");
         foreach (GameObject card in cards)
         {
             RandomCard randomCard = card.GetComponent<RandomCard>();
@@ -91,7 +76,6 @@ public class CameraScript : MonoBehaviour {
         cards_up++;
         if (cards_up >= 5)
         {
-            //foreach (int value in cardsObtained) print(value);
             doneholder.GetComponent<DoneButton>().toggleDone();
             cards_up = 0;
         }
