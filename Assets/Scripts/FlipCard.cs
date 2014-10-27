@@ -11,6 +11,7 @@ public class FlipCard : MonoBehaviour {
 
     float waitTime;
     bool isAnimationProcessing = false;
+    bool cw;
 
     public Quaternion originalRotationValue;
 
@@ -19,6 +20,7 @@ public class FlipCard : MonoBehaviour {
         waitTime = 1.0f / fps;
         rotateDegreePerSecond = 180f;
         originalRotationValue = transform.rotation;
+        cw = true;
 	}
 	
 	// Update is called once per frame
@@ -45,14 +47,26 @@ public class FlipCard : MonoBehaviour {
   
             float degree = rotateDegreePerSecond * Time.deltaTime;
 
-            transform.Rotate(new Vector3(0, degree, 0));
-
-            if (FLIP_LIMIT_DEGREE < transform.eulerAngles.y)
+            if (cw)
             {
-                transform.Rotate(new Vector3(0, -(transform.eulerAngles.y - FLIP_LIMIT_DEGREE), 0));
-                done = true;
-            }
+                transform.Rotate(new Vector3(0, degree, 0));
 
+                if (FLIP_LIMIT_DEGREE < transform.eulerAngles.y)
+                {
+                    transform.Rotate(new Vector3(0, -(transform.eulerAngles.y - FLIP_LIMIT_DEGREE), 0));
+                    done = true;
+                }
+            }
+            else
+            {
+                transform.Rotate(new Vector3(0, -degree, 0));
+
+                if (FLIP_LIMIT_DEGREE > transform.eulerAngles.y)
+                {
+                    transform.Rotate(new Vector3(0, -(transform.eulerAngles.y - FLIP_LIMIT_DEGREE), 0));
+                    done = true;
+                }
+            }
             yield return new WaitForSeconds(waitTime);
         }
 
@@ -74,5 +88,8 @@ public class FlipCard : MonoBehaviour {
     {
         rotateDegreePerSecond = speed;
     }
-
+    public void changeRotation()
+    {
+        cw = !cw;
+    }
 }
