@@ -3,17 +3,20 @@ using System.Collections;
 
 public class MainCard : MonoBehaviour {
     public bool toggle = true;
-    bool isAnimationProcessing = false;
-    float waitTime;
-    bool done;
+    //bool isAnimationProcessing;
+    //float waitTime;
+    //bool done;
     public float translateSpeed;
     const float maxZoom = -60f;
+    public bool moved;
 	// Use this for initialization
 	void Start () {
         gameObject.tag = "Maincard";
-        waitTime = 1.0f / 60;
-        done = false;
+        //waitTime = 1.0f / 60;
+        //done = false;
         translateSpeed = 180f;
+        moved = false;
+        //isAnimationProcessing = false;
 	}
 	
 	// Update is called once per frame
@@ -29,13 +32,30 @@ public class MainCard : MonoBehaviour {
 
     void OnMouseOver()
     {
+        if(!moved)transform.Translate(0, 0, -10f, Space.Self);
+        moved = true;
+        /*
         if (isAnimationProcessing || done)
         {
             return;
         }
         StartCoroutine(translate());
-
+        */
     }
+
+    void OnMouseExit()
+    {
+        if (GetComponent<FlipCard>().isFlipped())
+        {
+            return;
+        }
+        if (moved)
+        {
+            resetZoom();
+        }
+        moved = false;
+    }
+    /*
     IEnumerator translate()
     {
         isAnimationProcessing = true;
@@ -54,6 +74,7 @@ public class MainCard : MonoBehaviour {
 
         isAnimationProcessing = false;
     }
+     */
     /*
     public void SpeedSlide(float speed)
     {
@@ -63,5 +84,10 @@ public class MainCard : MonoBehaviour {
     bool GreaterEqual(Vector3 a, Vector3 b)
     {
         return (a.x >= b.x) && (a.y >= b.y) && (a.z >= b.z);
+    }
+
+    public void resetZoom()
+    {
+        transform.Translate(0, 0, 10f, Space.Self);
     }
 }

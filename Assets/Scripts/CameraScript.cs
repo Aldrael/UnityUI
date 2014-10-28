@@ -49,7 +49,7 @@ public class CameraScript : MonoBehaviour
     void Start()
     {
         mute = false;
-        current_volume = 0.5f;
+        current_volume = 0.25f;
         AudioListener.volume = current_volume;
         cards_up = 0;
         gameObject.tag = "Manager";
@@ -108,9 +108,8 @@ public class CameraScript : MonoBehaviour
         }
     }
 
-    public void cardCounter(int index)
+    public void cardCounter()
     {
-        addCard(index);
         cards_up++;
         if (cards_up >= 5)
         {
@@ -143,6 +142,14 @@ public class CameraScript : MonoBehaviour
         {
             card.GetComponent<FlipCard>().SpeedSlide(speed);
            // card.GetComponent<MainCard>().SpeedSlide(speed);
+        }
+    }
+
+    public void alphaChangeAllCards(float speed)
+    {
+        foreach (GameObject card in cards)
+        {
+            card.GetComponent<FlipCard>().AlphaSlide(speed);
         }
     }
 

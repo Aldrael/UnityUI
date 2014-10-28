@@ -11,7 +11,7 @@ public class DeckScript : MonoBehaviour {
         cardsObtained = new List<int>();
         DontDestroyOnLoad(this);
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 	

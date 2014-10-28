@@ -23,7 +23,7 @@ public class SecondLevel : MonoBehaviour {
             displayText.AppendLine(cardNames(i) + ": " + cards[i].ToString());
         }
         deckDisplay.displayText(displayText.ToString());
-        DontDestroyOnLoad(this);
+        //DontDestroyOnLoad(this);
 	}
 	
 	// Update is called once per frame
