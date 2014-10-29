@@ -15,7 +15,7 @@ public class MusicScript : MonoBehaviour {
 	void Start () {
 
         audioSource = gameObject.GetComponent<AudioSource>();
-        current = GameObject.Find("Canvas/CurrentText").GetComponent<Text>();
+        current = GameObject.Find("CurrentText").GetComponent<Text>();
         songindex = 0;
         playClip();
 	}
