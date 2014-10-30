@@ -19,4 +19,9 @@ public class NewCard : MonoBehaviour {
         gameObject.SetActive(toggle);
     }
 
+    public void disableNew()
+    {
+        gameObject.SetActive(false);
+    }
+
 }

@@ -45,6 +45,13 @@ public class CameraScript : MonoBehaviour
     public Texture2D cursorTexture;
     public CursorMode cursorMode = CursorMode.Auto;
     public Vector2 hotSpot = Vector2.zero;
+
+    public Texture2D fadeOutTexture;
+    public float fadeSpeed = 0.8f;
+
+    int drawDepth = -1000;
+    float alpha = 1.0f;
+    int fadeDir = -1;
     // Use this for initialization
     void Start()
     {
@@ -64,7 +71,29 @@ public class CameraScript : MonoBehaviour
     {
         if (Input.GetKey("escape"))
             Application.Quit();
+    }
+    void OnGUI()
+    {
+        // fade out/in the alpha value using a direction, a speed and Time.deltatime to convert the operation to seconds
+        alpha += fadeDir * fadeSpeed * Time.deltaTime;
 
+        //force (clamp) the number between 0 and 1
+        alpha = Mathf.Clamp01(alpha);
+
+        GUI.color = new Color(GUI.color.r, GUI.color.g, GUI.color.b, alpha);
+        GUI.depth = drawDepth;  //make the black texture render on top (drawn last)
+        GUI.DrawTexture(new Rect(0, 0, Screen.width, Screen.height), fadeOutTexture);
+    }
+
+    public float BeginFade(int direction)
+    {
+        fadeDir = direction;
+        return (fadeSpeed);
+    }
+
+    void OnLevelWasLoaded()
+    {
+        BeginFade(-1);
     }
 
     public void MuteToggle()
@@ -84,6 +113,13 @@ public class CameraScript : MonoBehaviour
     public void ChangeScene(int scene)
     {
         GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>().saveCards(cardsObtained);
+        StartCoroutine(ChangeLevel(scene));
+    }
+
+    IEnumerator ChangeLevel(int scene)
+    {
+        float fadeTime = BeginFade(1);
+        yield return new WaitForSeconds(fadeTime);
         Application.LoadLevel(scene);
     }
 
@@ -126,6 +162,33 @@ public class CameraScript : MonoBehaviour
         }
     }
 
+    public void enableAllCards()
+    {
+        StartCoroutine(enableWait());
+    }
+
+    IEnumerator enableWait()
+    {
+        foreach (GameObject card in cards)
+        {
+            card.GetComponent<MainCard>().enableCard();
+            float time = 0;
+            while (time < 0.5f)
+            {
+                time += Time.deltaTime;
+                yield return new WaitForSeconds(1.0f / 60);
+            }
+        }
+    }
+
+    public void disableAllCards()
+    {
+        foreach (GameObject card in cards)
+        {
+            card.GetComponent<MainCard>().disableCard();
+        }
+    }
+
     public void resetAllCards()
     {
         foreach (GameObject card in cards)
@@ -133,7 +196,7 @@ public class CameraScript : MonoBehaviour
             card.GetComponent<FlipCard>().resetCard();
         }
 
-        toggleAllCards();
+        disableAllCards();
     }
 
     public void speedChangeAllCards(float speed)

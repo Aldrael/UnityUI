@@ -17,6 +17,10 @@ public class FlipCard : MonoBehaviour {
 
     public Quaternion originalRotationValue;
 
+    public Transform cardEffect;
+
+    public Object holyblast;
+
 	// Use this for initialization
 	void Start () {
         waitTime = 1.0f / fps;
@@ -29,7 +33,7 @@ public class FlipCard : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        
+      
 	}
 
     void OnMouseOver()
@@ -178,5 +182,24 @@ public class FlipCard : MonoBehaviour {
     public void AlphaSlide(float speed)
     {
         alphaSpeed = speed;
+    }
+
+    public void endCard()
+    {
+        cardEffect.localScale = new Vector3(10f, 10f, 1f);
+        float time = 1.5f;
+        holyblast = Instantiate(cardEffect, transform.position, transform.rotation);
+        StartCoroutine(waitForEnd(time));
+    }
+
+    IEnumerator waitForEnd(float time)
+    {
+        float waitTime = 0;
+        while (waitTime < time)
+        {
+            waitTime += Time.deltaTime;
+            yield return new WaitForSeconds(1.0f/60);
+        }
+        Destroy((holyblast as Transform).gameObject);
     }
 }

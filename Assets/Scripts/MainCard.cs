@@ -9,9 +9,10 @@ public class MainCard : MonoBehaviour {
     public float translateSpeed;
     const float maxZoom = -60f;
     public bool moved;
-    public Transform gem1;
+    public Transform gem1, thunder;
     bool hasGem;
-    Object gemPiece;
+    Object gemPiece, thunder_obj;
+    bool doneEnable;
 	// Use this for initialization
 	void Start () {
         gameObject.tag = "Maincard";
@@ -21,6 +22,7 @@ public class MainCard : MonoBehaviour {
         moved = false;
         //isAnimationProcessing = false;
         hasGem = false;
+        doneEnable = false;
 	}
 	
 	// Update is called once per frame
@@ -34,8 +36,43 @@ public class MainCard : MonoBehaviour {
         gameObject.SetActive(toggle);
     }
 
+    public void enableCard()
+    {
+        doneEnable = false;
+        Quaternion rotation = Quaternion.identity;
+        rotation.eulerAngles = new Vector3(270f, 0, 0);
+        thunder_obj = Instantiate(thunder, new Vector3(transform.position.x, transform.position.y, transform.position.z - 10), rotation);
+        gameObject.SetActive(true);
+        SpriteRenderer[] sr = gameObject.GetComponentsInChildren<SpriteRenderer>();
+        foreach (SpriteRenderer s in sr)
+        {
+            s.color = new Vector4(1f, 1f, 1f, 0f);
+        }
+        StartCoroutine(waitThunder(sr));
+    }
+
+    IEnumerator waitThunder(SpriteRenderer[] sr)
+    {
+        float time = 0;
+        while (time < 1.0f)
+        {
+            time += Time.deltaTime;
+            sr[0].color = new Vector4(1f, 1f, 1f, time);
+            yield return new WaitForSeconds(1.0f / 60);
+        }
+        sr[1].color = new Vector4(1f, 1f, 1f, 1f);
+        DestroyObject((thunder_obj as Transform).gameObject);
+        doneEnable = true;
+    }
+
+    public void disableCard()
+    {
+        gameObject.SetActive(false);
+    }
+
     void OnMouseOver()
     {
+        if (!doneEnable) return;
         if(!moved)transform.Translate(0, 0, -10f, Space.Self);
         moved = true;
         if (GetComponent<FlipCard>().isFlipped())
