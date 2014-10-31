@@ -54,10 +54,10 @@ public class MainCard : MonoBehaviour {
     IEnumerator waitThunder(SpriteRenderer[] sr)
     {
         float time = 0;
-        while (time < 1.0f)
+        while (time < 1.5f)
         {
             time += Time.deltaTime;
-            sr[0].color = new Vector4(1f, 1f, 1f, time);
+            sr[0].color = new Vector4(1f, 1f, 1f, time - 0.1f);
             yield return new WaitForSeconds(1.0f / 60);
         }
         sr[1].color = new Vector4(1f, 1f, 1f, 1f);
