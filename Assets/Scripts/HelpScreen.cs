@@ -4,7 +4,7 @@ using System.Collections;
 public class HelpScreen : MonoBehaviour {
     bool inAnimation;
     float currentx;
-    const float offsetx = 75f; 
+    const float offsetx = 200f; 
 	// Use this for initialization
 	void Start () {
         currentx = transform.position.x;

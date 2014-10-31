@@ -39,8 +39,8 @@ public class CameraScript : MonoBehaviour
     private bool mute;
     private float current_volume;
     public GameObject[] cards;
-    public GameObject doneholder;
-    public int cards_up { get; set; }
+    public GameObject doneholder, newholder;
+    public int cards_up;
     public List<int> cardsObtained;
     public Texture2D cursorTexture;
     public CursorMode cursorMode = CursorMode.Auto;
@@ -48,6 +48,8 @@ public class CameraScript : MonoBehaviour
 
     public Texture2D fadeOutTexture;
     public float fadeSpeed = 0.8f;
+
+    public bool newCardFlag;
 
     int drawDepth = -1000;
     float alpha = 1.0f;
@@ -63,14 +65,21 @@ public class CameraScript : MonoBehaviour
         doneholder.GetComponent<DoneButton>().toggleDone();
         toggleAllCards();
         cardsObtained = new List<int>();
+        newCardFlag = false;
 
-        Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
+        //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
     void Update()
     {
         if (Input.GetKey("escape"))
             Application.Quit();
+        if ((cards_up == 0) && newCardFlag)
+        {
+            resetAllCards();
+            newholder.GetComponent<NewCard>().toggleNew();
+            newCardFlag = false;
+        }
     }
     void OnGUI()
     {
@@ -150,7 +159,7 @@ public class CameraScript : MonoBehaviour
         if (cards_up >= 5)
         {
             doneholder.GetComponent<DoneButton>().toggleDone();
-            cards_up = 0;
+            //cards_up = 0;
         }
     }
 

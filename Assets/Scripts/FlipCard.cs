@@ -14,6 +14,7 @@ public class FlipCard : MonoBehaviour {
     bool isAnimationProcessing = false;
     bool cw;
     int mode;
+    public bool isReady;
 
     public Quaternion originalRotationValue;
 
@@ -28,6 +29,7 @@ public class FlipCard : MonoBehaviour {
         originalRotationValue = transform.rotation;
         cw = true;
         alphaSpeed = 0.03f;
+        isReady = false;
        // manager = GameObject.FindWithTag("Manager").GetComponent<CameraScript>();
 	}
 	
@@ -38,7 +40,7 @@ public class FlipCard : MonoBehaviour {
 
     void OnMouseOver()
     {
-        if (isAnimationProcessing || isFaceUp)
+        if (isAnimationProcessing || isFaceUp || !isReady)
         {
             return;
         }
@@ -155,6 +157,7 @@ public class FlipCard : MonoBehaviour {
         MainCard mainCard = GetComponent<MainCard>();
         mainCard.moved = false;
         mainCard.resetZoom();
+        isReady = false;
         GetComponentInChildren<RandomCard>().randomizeCards();
     }
 
