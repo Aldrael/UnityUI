@@ -109,12 +109,14 @@ public class CameraScript : MonoBehaviour
     {
         if (mute)
         {
-            AudioListener.volume = current_volume;
+            //AudioListener.volume = current_volume;
+            AudioListener.pause = false;
             mute = false;
         }
         else
         {
-            AudioListener.volume = 0;
+            //AudioListener.volume = 0;
+            AudioListener.pause = true;
             mute = true;
         }
     }

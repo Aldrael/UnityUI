@@ -9,7 +9,7 @@ public class MusicScript : MonoBehaviour {
     Text current;
     StringBuilder theText;
     private int songindex;
-    private const string header = "Current Playing:";
+    private const string header = "Currently Playing:";
 
 	// Use this for initialization
 	void Start () {
