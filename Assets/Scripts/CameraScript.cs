@@ -66,6 +66,7 @@ public class CameraScript : MonoBehaviour
         toggleAllCards();
         cardsObtained = new List<int>();
         newCardFlag = false;
+        AudioListener.pause = false;
 
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
