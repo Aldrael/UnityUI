@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 /*
 public class Deck : IEquatable<Deck>
 {
@@ -38,7 +39,7 @@ public class CameraScript : MonoBehaviour
 
     private bool mute;
     private float current_volume;
-    public GameObject[] cards;
+    public GameObject[] cards, boosterpacks;
     public GameObject doneholder, newholder;
     public int cards_up;
     public List<int> cardsObtained;
@@ -54,6 +55,19 @@ public class CameraScript : MonoBehaviour
     int drawDepth = -1000;
     float alpha = 1.0f;
     int fadeDir = -1;
+
+    GameObject booster;
+    Vector3 mouseStartPosition, mousePos;
+    bool mousePressed;
+    Vector3 startPositionPack;
+    List<SpriteSlicer2DSliceInfo> cuts = new List<SpriteSlicer2DSliceInfo>();
+
+    const float boosterscale = 70f;
+    const float newCardDelay = 0.8f;
+
+    public bool inScaling;
+    int currentPack;
+    public GameObject packText;
     // Use this for initialization
     void Start()
     {
@@ -62,16 +76,39 @@ public class CameraScript : MonoBehaviour
         AudioListener.volume = current_volume;
         cards_up = 0;
         gameObject.tag = "Manager";
-        doneholder.GetComponent<DoneButton>().toggleDone();
-        toggleAllCards();
+        doneholder.GetComponent<DoneButton>().disableDone();
+
+        Vector3[] positions = new Vector3[cards.Length];
+        for (int i = 0; i < cards.Length; i++)
+        {
+            positions[i] = cards[i].GetComponent<MainCard>().transform.position;
+        }
+        foreach (GameObject card in cards)
+        {
+            card.GetComponent<MainCard>().initializePositions(positions);
+        }
+        disableAllCards();
         cardsObtained = new List<int>();
         newCardFlag = false;
+        AudioListener.pause = false;
 
+        //booster = GameObject.Find("LOBBooster");
+        booster = GameObject.FindGameObjectWithTag("Boosterpack");
+        startPositionPack = booster.transform.position;
+
+        packText = GameObject.Find("CurrentPack");
+
+        inScaling = false;
+        currentPack = 0;
+        disableAllBoosters();
+        //enableBooster(0);
+        packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
     void Update()
     {
+        //Debug.DrawLine(new Vector3(-100f, 0, 0), new Vector3(100f, 0, 0), Color.red);
         if (Input.GetKey("escape"))
             Application.Quit();
         if ((cards_up == 0) && newCardFlag)
@@ -80,6 +117,9 @@ public class CameraScript : MonoBehaviour
             newholder.GetComponent<NewCard>().toggleNew();
             newCardFlag = false;
         }
+
+        cutPacks();
+
     }
     void OnGUI()
     {
@@ -180,11 +220,23 @@ public class CameraScript : MonoBehaviour
 
     IEnumerator enableWait()
     {
+        /*
         foreach (GameObject card in cards)
         {
             card.GetComponent<MainCard>().enableCard();
             float time = 0;
             while (time < 0.5f)
+            {
+                time += Time.deltaTime;
+                yield return new WaitForSeconds(1.0f / 60);
+            }
+        }
+         */
+        for (int i = 0; i < cards.Length; i++)
+        {
+            cards[i].GetComponent<MainCard>().enableCard(i);
+            float time = 0;
+            while (time < newCardDelay)
             {
                 time += Time.deltaTime;
                 yield return new WaitForSeconds(1.0f / 60);
@@ -238,5 +290,98 @@ public class CameraScript : MonoBehaviour
         {
             card.GetComponent<FlipCard>().changeRotation();
         }
+    }
+
+    public void cutPacks()
+    {
+        if (inScaling)
+        {
+            return;
+        }
+        mousePos = Input.mousePosition;
+        mousePos.z = startPositionPack.z;
+        Vector3 currentMousePosition = Camera.main.ScreenToWorldPoint(mousePos);
+        //print(currentMousePosition);
+        if (Input.GetMouseButton(0))
+        {
+            if (!mousePressed)
+            {
+                mouseStartPosition = currentMousePosition;
+            }
+
+            Debug.DrawLine(mouseStartPosition, currentMousePosition, Color.red);
+            mousePressed = true;
+        }
+        else if (mousePressed)
+        {
+            
+            //SpriteSlicer2D.SliceSprite(mouseStartPosition, currentMousePosition, booster, true,ref cuts);
+            SpriteSlicer2D.SliceAllSprites(mouseStartPosition, currentMousePosition, false, ref cuts);
+            /*
+            GameObject[] packs = GameObject.FindGameObjectsWithTag("Boosterpack");
+            foreach (GameObject pack in packs)
+            {
+                pack.GetComponent<Rigidbody2D>().AddForce(new Vector2(100f, 10000f));
+            }
+            */
+            mousePressed = false;
+        }
+    }
+
+    public void getPackPieces(List<GameObject> pieces)
+    {
+        inScaling = true;
+        foreach (GameObject piece in pieces)
+        {
+            StartCoroutine(changeScale(piece));
+        }
+    }
+
+    IEnumerator changeScale(GameObject piece)
+    {
+        yield return new WaitForSeconds(1);
+        enableAllCards();
+        float thisscale = boosterscale;
+        while (thisscale > 0)
+        {
+            thisscale -= 1f;
+            piece.GetComponent<Transform>().localScale = new Vector3(thisscale, thisscale, thisscale);
+            yield return new WaitForSeconds(1.0f / 60);
+        }
+        inScaling = false;
+        Destroy(piece);
+    }
+
+    public void disableBooster(int index)
+    {
+        boosterpacks[index].SetActive(false);
+    }
+
+    public void enableBooster() {
+        boosterpacks[currentPack].SetActive(true);
+    }
+
+    public void disableAllBoosters()
+    {
+        foreach (GameObject pack in boosterpacks)
+        {
+            pack.SetActive(false);
+        }
+    }
+
+    public void increPack()
+    {
+        disableBooster(currentPack++);
+        if (currentPack > boosterpacks.Length - 1) currentPack = 0;
+        //enableBooster();
+        packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
+    }
+
+    public void decrePack()
+    {
+        disableBooster(currentPack--);
+        if (currentPack < 0) currentPack = boosterpacks.Length - 1;
+        //enableBooster();
+        packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
     }
 }

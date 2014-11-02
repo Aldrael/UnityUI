@@ -19,4 +19,9 @@ public class DoneButton : MonoBehaviour {
         toggle = !toggle;
         gameObject.SetActive(toggle);
     }
+    public void disableDone()
+    {
+        toggle = false;
+        gameObject.SetActive(toggle);
+    }
 }

@@ -17,6 +17,7 @@ public class MainCard : MonoBehaviour {
     SpriteRenderer[] sr;
     Vector3 originalPosition;
     CameraScript manager;
+    Vector3[] positions;
 	// Use this for initialization
 	void Start () {
         gameObject.tag = "Maincard";
@@ -29,7 +30,7 @@ public class MainCard : MonoBehaviour {
         doneEnable = false;
         originalPosition = gameObject.transform.position;
         manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
-        
+        //initializePositions();
 	}
 	
 	// Update is called once per frame
@@ -43,22 +44,25 @@ public class MainCard : MonoBehaviour {
         gameObject.SetActive(toggle);
     }
 
-    public void enableCard()
+    public void enableCard(int index)
     {
+        //initializePositions();
         doneEnable = false;
+        gameObject.SetActive(true);
+        gameObject.transform.position = new Vector3(0,0,470f);
+        originalPosition = gameObject.transform.position;
         Quaternion rotation = Quaternion.identity;
         rotation.eulerAngles = new Vector3(270f, 0, 0);
         thunder_obj = Instantiate(thunder, new Vector3(originalPosition.x, originalPosition.y, originalPosition.z - 10), rotation);
-        gameObject.SetActive(true);
         sr = gameObject.GetComponentsInChildren<SpriteRenderer>();
         foreach (SpriteRenderer s in sr)
         {
             s.color = new Vector4(1f, 1f, 1f, 0f);
         }
-        StartCoroutine(waitThunder(sr));
+        StartCoroutine(waitThunder(sr, index));
     }
 
-    IEnumerator waitThunder(SpriteRenderer[] sr)
+    IEnumerator waitThunder(SpriteRenderer[] sr, int index)
     {
         float time = 0;
         while (time < 0.5f)
@@ -68,13 +72,16 @@ public class MainCard : MonoBehaviour {
             yield return new WaitForSeconds(1.0f / 60);
         }
         sr[1].color = new Vector4(1f, 1f, 1f, 1f);
-        doneEnable = true;
+        iTween.MoveTo(gameObject, positions[index], 0.5f);
         while (time < 1.0f)
         {
             time += Time.deltaTime;
             yield return new WaitForSeconds(1.0f / 60);
         }
         DestroyObject((thunder_obj as Transform).gameObject);
+        
+        //yield return new WaitForSeconds(1);
+        doneEnable = true;
     }
 
     public void disableCard()
@@ -215,5 +222,18 @@ public class MainCard : MonoBehaviour {
         iTween.MoveTo(gameObject, originalPosition, 0f);
         manager.cards_up--;
         manager.newCardFlag = true;
+    }
+    public void initializePositions(Vector3[] original)
+    {
+        /*
+        positions = new Vector3[5];
+        positions[0] = new Vector3(-78.1f, 46.0f, 491.4f);
+        positions[1] = new Vector3(-0.7f, 71f, 491.4f);
+        positions[2] = new Vector3(81.4f, 44.0f, 491.4f);
+        positions[3] = new Vector3(-45.9f, -64.2f, 491.4f);
+        positions[4] = new Vector3(46.3f, -66.5f, 491.4f);
+        */
+        positions = new Vector3[5];
+        positions = original;
     }
 }
