@@ -20,17 +20,26 @@ public class FlipCard : MonoBehaviour {
 
     public Transform cardEffect;
 
-    public Object holyblast;
+    public Object rare;
+
+    CameraScript manager;
+
+    public RareCard rareCard;
+
+    RandomCard randomCard;
 
 	// Use this for initialization
 	void Start () {
         waitTime = 1.0f / fps;
-        rotateDegreePerSecond = 180f;
+        rotateDegreePerSecond = 1000f;
         originalRotationValue = transform.rotation;
         cw = true;
         alphaSpeed = 0.03f;
         isReady = false;
-       // manager = GameObject.FindWithTag("Manager").GetComponent<CameraScript>();
+        manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
+        rareCard = GetComponentInChildren<RareCard>();
+        randomCard = GetComponentInChildren<RandomCard>();
+        rareCard.disableRare();
 	}
 	
 	// Update is called once per frame
@@ -46,12 +55,14 @@ public class FlipCard : MonoBehaviour {
         }
         if (Input.GetMouseButton(0))
         {
+            GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
             mode = 0;
             OnLeftClick();
         }
 
         if (Input.GetMouseButton(1))
         {
+            GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
             mode = 1;
             OnRightClick();
         }
@@ -76,12 +87,18 @@ public class FlipCard : MonoBehaviour {
         isAnimationProcessing = true;
 
         bool done = false;
+        bool checkonce = true;
         while (!done)
         {
             alpha -= alphaSpeed;
             BackCard backCard = GetComponentInChildren<BackCard>();
             SpriteRenderer sprite = backCard.GetComponent<SpriteRenderer>();
             sprite.color = new Vector4(1f, 1f, 1f, alpha);
+            if ((sprite.color.a < 0.5f) && (checkonce))
+            {
+                checkRare();
+                checkonce = false;
+            }
             if (sprite.color.a < 0.01f)
             {
                 done = true;
@@ -93,6 +110,7 @@ public class FlipCard : MonoBehaviour {
         manager.cardCounter();
         isFaceUp = true;
         isAnimationProcessing = false;
+        
     }
 
     void OnLeftClick()
@@ -107,6 +125,7 @@ public class FlipCard : MonoBehaviour {
     {
         isAnimationProcessing = true;
         bool done = false;
+        checkRare();
         while (!done)
         {
   
@@ -138,12 +157,15 @@ public class FlipCard : MonoBehaviour {
         manager.cardCounter();
         isFaceUp = true;
         isAnimationProcessing = false;
+        
     }
     public void resetCard()
     {
+        rareCard.disableRare();
         if (mode == 0)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, originalRotationValue, Time.time * 1.0f);
+            rareCard.transform.localPosition = new Vector3(0, 0, -2f);
         }
         else if (mode == 1)
         {
@@ -158,7 +180,8 @@ public class FlipCard : MonoBehaviour {
         mainCard.moved = false;
         mainCard.resetZoom();
         isReady = false;
-        GetComponentInChildren<RandomCard>().randomizeCards();
+        
+        //GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
     }
 
     public void SpeedSlide(float speed)
@@ -187,12 +210,16 @@ public class FlipCard : MonoBehaviour {
         alphaSpeed = speed;
     }
 
-    public void endCard()
+    public void checkRare()
     {
-        cardEffect.localScale = new Vector3(10f, 10f, 1f);
-        float time = 1.5f;
-        holyblast = Instantiate(cardEffect, transform.position, transform.rotation);
-        StartCoroutine(waitForEnd(time));
+        if (randomCard.rare)
+        {
+            rareCard.enableRare();
+            if (mode == 0)
+            {
+                rareCard.transform.localPosition = new Vector3(0, 0, 2f);
+            }
+        }
     }
 
     IEnumerator waitForEnd(float time)
@@ -203,6 +230,6 @@ public class FlipCard : MonoBehaviour {
             waitTime += Time.deltaTime;
             yield return new WaitForSeconds(1.0f/60);
         }
-        Destroy((holyblast as Transform).gameObject);
+        Destroy((rare as Transform).gameObject);
     }
 }

@@ -62,12 +62,13 @@ public class CameraScript : MonoBehaviour
     Vector3 startPositionPack;
     List<SpriteSlicer2DSliceInfo> cuts = new List<SpriteSlicer2DSliceInfo>();
 
-    const float boosterscale = 70f;
+    const float boosterscale = 1f;
     const float newCardDelay = 0.8f;
 
     public bool inScaling;
-    int currentPack;
+    public int currentPack;
     public GameObject packText;
+    GameObject[] packButtons;
     // Use this for initialization
     void Start()
     {
@@ -101,8 +102,9 @@ public class CameraScript : MonoBehaviour
         inScaling = false;
         currentPack = 0;
         disableAllBoosters();
-        //enableBooster(0);
+        enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
+        packButtons = GameObject.FindGameObjectsWithTag("Packselection");
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
@@ -113,9 +115,14 @@ public class CameraScript : MonoBehaviour
             Application.Quit();
         if ((cards_up == 0) && newCardFlag)
         {
-            resetAllCards();
-            newholder.GetComponent<NewCard>().toggleNew();
             newCardFlag = false;
+            resetAllCards();
+            //newholder.GetComponent<NewCard>().toggleNew();
+            enableBooster();
+            foreach (GameObject packButton in packButtons)
+            {
+                packButton.GetComponent<PackSelection>().enableButton();
+            }
         }
 
         cutPacks();
@@ -191,7 +198,7 @@ public class CameraScript : MonoBehaviour
         foreach (GameObject card in cards)
         {
             RandomCard randomCard = card.GetComponent<RandomCard>();
-            randomCard.randomizeCards();
+            randomCard.randomizeCards(currentPack);
         }
     }
 
@@ -344,7 +351,7 @@ public class CameraScript : MonoBehaviour
         float thisscale = boosterscale;
         while (thisscale > 0)
         {
-            thisscale -= 1f;
+            thisscale -= 0.01f;
             piece.GetComponent<Transform>().localScale = new Vector3(thisscale, thisscale, thisscale);
             yield return new WaitForSeconds(1.0f / 60);
         }
@@ -373,7 +380,7 @@ public class CameraScript : MonoBehaviour
     {
         disableBooster(currentPack++);
         if (currentPack > boosterpacks.Length - 1) currentPack = 0;
-        //enableBooster();
+        enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
     }
 
@@ -381,7 +388,8 @@ public class CameraScript : MonoBehaviour
     {
         disableBooster(currentPack--);
         if (currentPack < 0) currentPack = boosterpacks.Length - 1;
-        //enableBooster();
+        enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
     }
+
 }

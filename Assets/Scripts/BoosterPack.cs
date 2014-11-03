@@ -7,6 +7,7 @@ public class BoosterPack : MonoBehaviour
     CanvasManager canvas;
     CameraScript manager;
     List<GameObject> pieces;
+    GameObject[] packButtons;
     // Use this for initialization
     void Start()
     {
@@ -14,6 +15,7 @@ public class BoosterPack : MonoBehaviour
         pieces = new List<GameObject>();
         //canvas = GameObject.Find("Canvas").GetComponent<CanvasManager>();
         manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
+        packButtons = GameObject.FindGameObjectsWithTag("Packselection");
     }
 
     // Update is called once per frame
@@ -26,7 +28,11 @@ public class BoosterPack : MonoBehaviour
     {
         //print("Sliced");
         //rigidbody2D.AddForce(new Vector2( (Random.Range(-200f,200f)) , (Random.Range(1000f,10000f))));
-        
+        packButtons = GameObject.FindGameObjectsWithTag("Packselection");
+        foreach (GameObject packButton in packButtons)
+        {
+            packButton.GetComponent<PackSelection>().disableButton();
+        }
         pieces = sliceInfo.ChildObjects;
         //canvas.getPackPieces(pieces);
         manager.getPackPieces(pieces);

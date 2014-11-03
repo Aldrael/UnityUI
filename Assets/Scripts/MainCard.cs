@@ -18,6 +18,7 @@ public class MainCard : MonoBehaviour {
     Vector3 originalPosition;
     CameraScript manager;
     Vector3[] positions;
+
 	// Use this for initialization
 	void Start () {
         gameObject.tag = "Maincard";
@@ -30,6 +31,7 @@ public class MainCard : MonoBehaviour {
         doneEnable = false;
         originalPosition = gameObject.transform.position;
         manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
+
         //initializePositions();
 	}
 	
@@ -79,7 +81,7 @@ public class MainCard : MonoBehaviour {
             yield return new WaitForSeconds(1.0f / 60);
         }
         DestroyObject((thunder_obj as Transform).gameObject);
-        
+
         //yield return new WaitForSeconds(1);
         doneEnable = true;
     }
@@ -95,6 +97,11 @@ public class MainCard : MonoBehaviour {
         if (!moved)
         {
             transform.Translate(0, 0, -hoverOffset, Space.Self);
+            Quaternion oldrotation = Quaternion.identity;
+            oldrotation.eulerAngles = new Vector3(315f, 0, 0);
+           // rareCard.transform.localRotation = Quaternion.identity;
+           // rareCard.transform.Translate(0, 0, -hoverOffset, Space.Self);
+           // rareCard.transform.localRotation = oldrotation;
             moved = true;
         }
         if (!hasGem)
@@ -236,4 +243,5 @@ public class MainCard : MonoBehaviour {
         positions = new Vector3[5];
         positions = original;
     }
+
 }
