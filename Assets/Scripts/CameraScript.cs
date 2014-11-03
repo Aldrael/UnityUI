@@ -338,16 +338,22 @@ public class CameraScript : MonoBehaviour
     public void getPackPieces(List<GameObject> pieces)
     {
         inScaling = true;
+        StartCoroutine(enableCardsDelay());
         foreach (GameObject piece in pieces)
         {
             StartCoroutine(changeScale(piece));
         }
     }
 
-    IEnumerator changeScale(GameObject piece)
+    IEnumerator enableCardsDelay()
     {
         yield return new WaitForSeconds(1);
         enableAllCards();
+    }
+
+    IEnumerator changeScale(GameObject piece)
+    {
+        yield return new WaitForSeconds(1);
         float thisscale = boosterscale;
         while (thisscale > 0)
         {
