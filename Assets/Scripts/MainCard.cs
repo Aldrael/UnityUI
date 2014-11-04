@@ -215,7 +215,7 @@ public class MainCard : MonoBehaviour {
 
     IEnumerator moveCard(string cardpath)
     {
-        iTween.MoveTo(gameObject, iTween.Hash("path", iTweenPath.GetPath(cardpath), "time", 5));
+        iTween.MoveTo(gameObject, iTween.Hash("path", iTweenPath.GetPath(cardpath), "time", 4));
         yield return new WaitForSeconds(3f);
         float alpha = 1f;
         sr[0].color = new Vector4(1f, 1f, 1f, 0f);

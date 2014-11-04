@@ -13,4 +13,13 @@ public class BackCard : MonoBehaviour {
 	
 	}
 
+    public void disableObject()
+    {
+        gameObject.SetActive(false);
+    }
+
+    public void enableObject()
+    {
+        gameObject.SetActive(true);
+    }
 }

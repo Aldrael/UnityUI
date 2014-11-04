@@ -69,6 +69,7 @@ public class CameraScript : MonoBehaviour
     public int currentPack;
     public GameObject packText;
     GameObject[] packButtons;
+    public bool inBoosterMove;
     // Use this for initialization
     void Start()
     {
@@ -101,10 +102,12 @@ public class CameraScript : MonoBehaviour
 
         inScaling = false;
         currentPack = 0;
+        initBoosters();
         disableAllBoosters();
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
         packButtons = GameObject.FindGameObjectsWithTag("Packselection");
+        inBoosterMove = false;
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
@@ -301,7 +304,7 @@ public class CameraScript : MonoBehaviour
 
     public void cutPacks()
     {
-        if (inScaling)
+        if (inScaling || inBoosterMove)
         {
             return;
         }
@@ -384,18 +387,49 @@ public class CameraScript : MonoBehaviour
 
     public void increPack()
     {
-        disableBooster(currentPack++);
+        if (inBoosterMove)
+        {
+            return;
+        }
+        int previous = currentPack++;
         if (currentPack > boosterpacks.Length - 1) currentPack = 0;
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
+        iTween.MoveTo(boosterpacks[currentPack], iTween.Hash("path", iTweenPath.GetPath("ForwardPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
+        iTween.MoveTo(boosterpacks[previous], iTween.Hash("path", iTweenPath.GetPath("NextPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
+        StartCoroutine(waitMove(previous));
+    }
+
+    IEnumerator waitMove(int previous)
+    {
+        inBoosterMove = true;
+        yield return new WaitForSeconds(1);
+        inBoosterMove = false;
+        disableBooster(previous);
     }
 
     public void decrePack()
     {
-        disableBooster(currentPack--);
+        if (inBoosterMove)
+        {
+            return;
+        }
+        int previous = currentPack--;
         if (currentPack < 0) currentPack = boosterpacks.Length - 1;
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
+        iTween.MoveTo(boosterpacks[currentPack], iTween.Hash("path", iTweenPath.GetPath("PreviousPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
+        iTween.MoveTo(boosterpacks[previous], iTween.Hash("path", iTweenPath.GetPath("BackPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
+        StartCoroutine(waitMove(previous));
+    }
+
+    public void initBoosters()
+    {
+        foreach (GameObject pack in boosterpacks)
+        {
+            pack.GetComponent<Transform>().transform.Translate(0, 0, 8.6681f);
+        }
+        boosterpacks[currentPack].GetComponent<Transform>().transform.Translate(0, 0, -8.6681f);
     }
 
 }
