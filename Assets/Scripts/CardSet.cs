@@ -6,18 +6,8 @@ public class CardSet : MonoBehaviour
     public Sprite[] cards;
 
     public bool rare;
-    private int index;
-    public int Index
-    {
-        get
-        {
-            return index;
-        }
-        set
-        {
-            index = value;
-        }
-    }
+    public int index;
+
     public Bounds boundsthis;
 
     public float factor_x;
@@ -42,7 +32,7 @@ public class CardSet : MonoBehaviour
 
         SpriteRenderer spriteRenderer = GetComponent<SpriteRenderer>(); // we are accessing the SpriteRenderer that is attached to the Gameobject
 
-
+        this.index = index;
         rare = isRare(index);
         spriteRenderer.sprite = cards[index];
         boundsthis = spriteRenderer.sprite.bounds;
@@ -52,6 +42,7 @@ public class CardSet : MonoBehaviour
         factor_z = (float)backcard.bounds.size.z / boundsthis.size.z;
 
         spriteRenderer.transform.localScale = new Vector3(factor_x, factor_y, factor_z);
+   
     }
 
     bool isRare(int index)

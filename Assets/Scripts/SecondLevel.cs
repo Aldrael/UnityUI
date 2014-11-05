@@ -4,28 +4,45 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Text;
 
-public class SecondLevel : MonoBehaviour {
+public class SecondLevel : MonoBehaviour
+{
     //public List<int> cardsObtained;
     public int[] cardsObtained;
     DisplayTextDeck deckDisplay;
     StringBuilder displayText;
     public GameObject cardTemplate;
-    GameObject[] cards;
+    //GameObject[] cards;
     Vector3[] cardPositions;
     Quaternion[] cardAngles;
 
-	// Use this for initialization
-	void Start () {
+    GameObject[] currentCards;
+    bool released;
+    bool inAnimation;
+    float speed;
+    Queue<int> cardStack_more;
+    Queue<int> cardStack_less;
+
+    // Use this for initialization
+    void Start()
+    {
         DeckScript deck = GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>();
         //cardsObtained.AddRange(deck.cardsObtained);
-       // cards = new GameObject[cardsObtained.Count];
+        // cards = new GameObject[cardsObtained.Count];
         cardsObtained = deck.cardsObtained.ToArray();
-        cards = new GameObject[cardsObtained.Length];
+        //cards = new GameObject[cardsObtained.Length];
+        currentCards = new GameObject[7];
 
+        cardStack_more = new Queue<int>(deck.cardsObtained);
+        cardStack_less = new Queue<int>();
+  
         initCardPositions();
         initCardAngles();
-       // layoutCards(cardsObtained.Count);
-        layoutCards(cardsObtained.Length);
+        // layoutCards(cardsObtained.Count);
+
+        layoutCards(cardStack_more.Count);
+        released = true;
+        inAnimation = false;
+        speed = 0.75f;
 
         /*
         foreach (int value in cardsObtained)
@@ -37,7 +54,7 @@ public class SecondLevel : MonoBehaviour {
            // currentx += 5f;
         }
         */
-        
+
         /*
         cardsObtained.AddRange(deck.cardsObtained);
         //foreach (int value in cardsObtained) print(value);
@@ -52,13 +69,35 @@ public class SecondLevel : MonoBehaviour {
         deckDisplay.displayText(displayText.ToString());
         //DontDestroyOnLoad(this);
         */
-	}
-	
-	// Update is called once per frame
-	void Update () {
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
         if (Input.GetKey("escape"))
             Application.LoadLevel(0);
-	}
+        if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null))
+        {
+            inAnimation = true;
+            released = false;
+            shiftLeft();
+        }
+        if (Input.GetKeyUp("left"))
+        {
+            released = true;
+        }
+        if (Input.GetKey("right") && released && !inAnimation && (currentCards[2] != null))
+        {
+            inAnimation = true;
+            released = false;
+            shiftRight();
+        }
+        if (Input.GetKeyUp("right"))
+        {
+            released = true;
+        }
+
+    }
 
     int[] sortCards(List<int> deck)
     {
@@ -89,19 +128,19 @@ public class SecondLevel : MonoBehaviour {
 
     string cardNames(int index)
     {
-            switch (index)
-            {
-                case (0):
-                    return "Head";
-                case (1):
-                    return "Leftarm";
-                case (2):
-                    return "Leftleg";
-                case (3):
-                    return "Rightarm";
-                default:
-                    return "Rightleg";
-            }
+        switch (index)
+        {
+            case (0):
+                return "Head";
+            case (1):
+                return "Leftarm";
+            case (2):
+                return "Leftleg";
+            case (3):
+                return "Rightarm";
+            default:
+                return "Rightleg";
+        }
     }
 
     void initCardPositions()
@@ -123,7 +162,7 @@ public class SecondLevel : MonoBehaviour {
         {
             cardAngles[i] = Quaternion.identity;
         }
-        cardAngles[0].eulerAngles = new Vector3(0,0,90f);
+        cardAngles[0].eulerAngles = new Vector3(0, 0, 90f);
         cardAngles[1].eulerAngles = new Vector3(0, 0, 60f);
         cardAngles[2].eulerAngles = new Vector3(0, 0, 30f);
         cardAngles[3].eulerAngles = new Vector3(0, 0, 0f);
@@ -136,61 +175,140 @@ public class SecondLevel : MonoBehaviour {
     {
         switch (amount)
         {
+            case 0:
+                {
+                    return;
+                }
             case 1:
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[0]);
-                cards[0] = Instantiate(cardTemplate, cardPositions[3], cardAngles[3]) as GameObject;
-                cards[0].GetComponentInChildren<BackCard>().disableObject();
-                break;
+                {
+                    instantiateMoreCard(3);
+                    break;
+                }
             case 2:
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[0]);
-                cards[0] = Instantiate(cardTemplate, cardPositions[3], cardAngles[3]) as GameObject;
-                cards[0].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[1]);
-                cards[1] = Instantiate(cardTemplate, cardPositions[4], cardAngles[4]) as GameObject;
-                cards[1].GetComponentInChildren<BackCard>().disableObject();
+                instantiateMoreCard(3);
+                instantiateMoreCard(4);
                 break;
             case 3:
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[0]);
-                cards[0] = Instantiate(cardTemplate, cardPositions[2], cardAngles[2]) as GameObject;
-                cards[0].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[1]);
-                cards[1] = Instantiate(cardTemplate, cardPositions[3], cardAngles[3]) as GameObject;
-                cards[1].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[2]);
-                cards[2] = Instantiate(cardTemplate, cardPositions[4], cardAngles[4]) as GameObject;
-                cards[2].GetComponentInChildren<BackCard>().disableObject();
-                break;
-            case 4:
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[0]);
-                cards[0] = Instantiate(cardTemplate, cardPositions[1], cardAngles[1]) as GameObject;
-                cards[0].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[1]);
-                cards[1] = Instantiate(cardTemplate, cardPositions[2], cardAngles[2]) as GameObject;
-                cards[1].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[2]);
-                cards[2] = Instantiate(cardTemplate, cardPositions[3], cardAngles[3]) as GameObject;
-                cards[2].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[3]);
-                cards[3] = Instantiate(cardTemplate, cardPositions[4], cardAngles[4]) as GameObject;
-                cards[3].GetComponentInChildren<BackCard>().disableObject();
+                instantiateMoreCard(3);
+                instantiateMoreCard(4);
+                instantiateMoreCard(5);
                 break;
             default:
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[0]);
-                cards[0] = Instantiate(cardTemplate, cardPositions[1], cardAngles[1]) as GameObject;
-                cards[0].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[1]);
-                cards[1] = Instantiate(cardTemplate, cardPositions[2], cardAngles[2]) as GameObject;
-                cards[1].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[2]);
-                cards[2] = Instantiate(cardTemplate, cardPositions[3], cardAngles[3]) as GameObject;
-                cards[2].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[3]);
-                cards[3] = Instantiate(cardTemplate, cardPositions[4], cardAngles[4]) as GameObject;
-                cards[3].GetComponentInChildren<BackCard>().disableObject();
-                cardTemplate.GetComponentInChildren<CardSet>().setCard(cardsObtained[4]);
-                cards[4] = Instantiate(cardTemplate, cardPositions[5], cardAngles[5]) as GameObject;
-                cards[4].GetComponentInChildren<BackCard>().disableObject();
+                instantiateMoreCard(3);
+                instantiateMoreCard(4);
+                instantiateMoreCard(5);
+                instantiateMoreCard(6);
                 break;
+        }
+    }
+    void shiftLeft()
+    {
+        if (currentCards[0] != null)
+        {
+            cardStack_less.Enqueue(currentCards[0].GetComponentInChildren<CardSet>().index);
+            DestroyObject(currentCards[0]);
+            currentCards[0] = null;
+        }
+        for (int i = 1; i < 7; i++)
+        {
+            if (currentCards[i] != null)
+            {
+                iTween.MoveTo(currentCards[i], iTween.Hash("path", iTweenPath.GetPath("RL" + i.ToString()), "time", speed));
+                iTween.RotateAdd(currentCards[i], new Vector3(0, 0, 30f), speed);
+            }
+        }
+        
+        GameObject[] newAr = new GameObject[currentCards.Length];
+
+        for (int i = 1; i < currentCards.Length; i++)
+        {
+            newAr[i - 1] = currentCards[i];
+
+        }
+
+        currentCards = newAr;
+
+
+        if (cardStack_more.Count > 0)
+        {
+            instantiateMoreCard(6);
+        }
+        else
+        {
+            currentCards[6] = null;
+
+        }
+        StartCoroutine(waitAnimation());
+    }
+
+    void shiftRight()
+    {
+        if (currentCards[6] != null)
+        {
+            cardStack_more.Enqueue(currentCards[6].GetComponentInChildren<CardSet>().index);
+            DestroyObject(currentCards[6]);
+            currentCards[6] = null;
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            if (currentCards[i] != null)
+            {
+                iTween.MoveTo(currentCards[i], iTween.Hash("path", iTweenPath.GetPath("LR" + i.ToString()), "time", speed));
+                iTween.RotateAdd(currentCards[i], new Vector3(0, 0, -30f), speed);
+            }
+        }
+        
+        GameObject[] newAr = new GameObject[currentCards.Length];
+        for (int i = currentCards.Length-2; i > -1; i--)
+        {
+            newAr[i + 1] = currentCards[i];
+        }
+        currentCards = newAr;
+
+        if (cardStack_less.Count > 0)
+        {
+            instantiateLessCard(0);
+        }
+        else
+        {
+            currentCards[0] = null;
+        }
+        StartCoroutine(waitAnimation());
+    }
+
+    IEnumerator waitAnimation()
+    {
+        yield return new WaitForSeconds(speed);
+        inAnimation = false;
+    }
+
+    void instantiateMoreCard(int index)
+    {
+        cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_more.Dequeue());
+        currentCards[index] = Instantiate(cardTemplate, cardPositions[index], cardAngles[index]) as GameObject;
+        currentCards[index].GetComponentInChildren<BackCard>().disableObject();
+        if (!currentCards[index].GetComponentInChildren<CardSet>().rare)
+        {
+            currentCards[index].GetComponentInChildren<RareCard>().disableRare();
+        }
+        else
+        {
+            currentCards[index].GetComponentInChildren<RareCard>().enableRare();
+        }
+    }
+
+    void instantiateLessCard(int index)
+    {
+        cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_less.Dequeue());
+        currentCards[index] = Instantiate(cardTemplate, cardPositions[index], cardAngles[index]) as GameObject;
+        currentCards[index].GetComponentInChildren<BackCard>().disableObject();
+        if (!currentCards[index].GetComponentInChildren<CardSet>().rare)
+        {
+            currentCards[index].GetComponentInChildren<RareCard>().disableRare();
+        }
+        else
+        {
+            currentCards[index].GetComponentInChildren<RareCard>().enableRare();
         }
     }
 }
