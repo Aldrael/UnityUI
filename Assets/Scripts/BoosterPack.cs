@@ -41,10 +41,11 @@ public class BoosterPack : MonoBehaviour
         foreach (GameObject piece in pieces)
         {
             float mass = piece.GetComponent<Rigidbody2D>().mass;
-            int randomx = Random.Range(0, 1);
+            int randomx = Random.Range(0, 2);
             float forcex;
             lowrange = (1000 * mass) / loop;
             highrange = (10000 * mass) / loop;
+
             if (randomx == 0)
             {
                 forcex = (Random.Range(-highrange, -lowrange));

@@ -46,7 +46,7 @@ public class FlipCard : MonoBehaviour {
 	void Update () {
       
 	}
-
+    /*
     void OnMouseOver()
     {
         if (isAnimationProcessing || isFaceUp || !isReady)
@@ -69,6 +69,13 @@ public class FlipCard : MonoBehaviour {
 
         if (Input.GetMouseButton(2))
             Debug.Log("Pressed middle click.");
+    }
+    */
+    public void CameraFlip()
+    {
+        GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
+        mode = 2;
+        OnLeftClick();
     }
 
     void OnRightClick()
@@ -117,7 +124,7 @@ public class FlipCard : MonoBehaviour {
     {
         CameraScript manager = GameObject.FindWithTag("Manager").GetComponent<CameraScript>();
         int cardObtained = GetComponentInChildren<RandomCard>().Index;
-        manager.addCard(cardObtained);
+        if(mode != 2) manager.addCard(cardObtained);
         StartCoroutine( flip() );
     }
 

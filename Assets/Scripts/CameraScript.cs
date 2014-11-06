@@ -3,45 +3,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
-/*
-public class Deck : IEquatable<Deck>
-{
-    public string CardName { get; set; }
 
-    public int CardId { get; set; }
-
-    public override string ToString()
-    {
-        return "ID: " + CardId + "   Name: " + CardName;
-    }
-    public override bool Equals(object obj)
-    {
-        if (obj == null) return false;
-        Deck objAsCard = obj as Deck;
-        if (objAsCard == null) return false;
-        else return Equals(objAsCard);
-    }
-    public override int GetHashCode()
-    {
-        return CardId;
-    }
-    public bool Equals(Deck other)
-    {
-        if (other == null) return false;
-        return (this.CardId.Equals(other.CardId));
-    }
-    // Should also override == and != operators.
-
-}
-  */
 public class CameraScript : MonoBehaviour
 {
 
     private bool mute;
     private float current_volume;
     public GameObject[] cards, boosterpacks;
-    public GameObject doneholder, newholder;
-    public int cards_up;
+    public GameObject doneholder, newholder, packholder;
+    public int cards_up, cardsSelected;
     public List<int> cardsObtained;
     public Texture2D cursorTexture;
     public CursorMode cursorMode = CursorMode.Auto;
@@ -63,7 +33,7 @@ public class CameraScript : MonoBehaviour
     List<SpriteSlicer2DSliceInfo> cuts = new List<SpriteSlicer2DSliceInfo>();
 
     const float boosterscale = 1f;
-    const float newCardDelay = 0.8f;
+    const float newCardDelay = 0.1f;
 
     public bool inScaling;
     public int currentPack;
@@ -108,6 +78,7 @@ public class CameraScript : MonoBehaviour
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
         packButtons = GameObject.FindGameObjectsWithTag("Packselection");
         inBoosterMove = false;
+        cardsSelected = 0;
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
@@ -128,9 +99,85 @@ public class CameraScript : MonoBehaviour
             }
         }
 
+        if (cardsSelected == 5)
+        {
+            float waitTime = 1.5f;
+            foreach (GameObject card in cards)
+            {
+                if (!card.GetComponent<MainCard>().hasGem)
+                {
+                    card.GetComponent<MainCard>().notSelected = true;
+                    card.GetComponent<MainCard>().translateUp();
+                    card.GetComponent<FlipCard>().CameraFlip();
+                    StartCoroutine(waitFlip(card, waitTime));
+                }
+                
+            }
+            StartCoroutine(animateSelected(waitTime));
+            cardsSelected = 0;
+        }
+
         cutPacks();
 
     }
+
+    IEnumerator waitFlip(GameObject card, float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        iTween.MoveAdd(card, new Vector3(-1000f, 0, 0), 3f);
+    }
+
+    IEnumerator animateSelected(float waitTime)
+    {
+        yield return new WaitForSeconds(waitTime);
+        int fillSlot = 5;
+        foreach (GameObject card in cards)
+        {
+            if (card.GetComponent<MainCard>().hasGem)
+            {
+                card.GetComponent<MainCard>().destroyGem();
+                iTween.MoveTo(card, iTween.Hash("time", 1f, "x", -190.2523f, "y", 66.78287f, "z", 460f, "easetype", "linear"));
+                yield return new WaitForSeconds(1f);
+                StartCoroutine(moveLoop(card, fillSlot));
+                fillSlot--;
+            }
+        }
+
+    }
+
+    IEnumerator moveLoop(GameObject card, int slot)
+    {
+        int nextPath = 1;
+        while (slot > nextPath)
+        {
+            iTween.MoveTo(card, iTween.Hash("time", 1f, "path", iTweenPath.GetPath("Arc" + nextPath.ToString()), "easetype", "linear"));
+            nextPath++;
+            yield return new WaitForSeconds(0.9f);
+        }
+    }
+
+    void moveTo(int spot, GameObject card)
+    {
+        switch (spot)
+        {
+            case 1:
+                iTween.MoveTo(card, iTween.Hash("path", iTweenPath.GetPath("Arc1"), "time", 1f));
+                break;
+            case 2:
+                iTween.MoveTo(card, iTween.Hash("path", iTweenPath.GetPath("Arc2"), "time", 1f));
+                break;
+            case 3:
+                iTween.MoveTo(card, iTween.Hash("path", iTweenPath.GetPath("Arc3"), "time", 1f));
+                break;
+            case 4:
+                iTween.MoveTo(card, iTween.Hash("path", iTweenPath.GetPath("Arc4"), "time", 1f));
+                break;
+            default:
+                iTween.MoveTo(card, iTween.Hash("path", iTweenPath.GetPath("Arc5"), "time", 1f));
+                break;
+        }
+    }
+
     void OnGUI()
     {
         // fade out/in the alpha value using a direction, a speed and Time.deltatime to convert the operation to seconds

@@ -10,7 +10,7 @@ public class MainCard : MonoBehaviour {
     const float maxZoom = -60f;
     public bool moved;
     public Transform gem1, thunder;
-    bool hasGem;
+    public bool hasGem;
     Object gemPiece, thunder_obj;
     bool doneEnable;
     float hoverOffset = 40f;
@@ -18,6 +18,8 @@ public class MainCard : MonoBehaviour {
     Vector3 originalPosition;
     CameraScript manager;
     Vector3[] positions;
+    public bool notSelected;
+    public int slotOccupied;
 
 	// Use this for initialization
 	void Start () {
@@ -29,9 +31,10 @@ public class MainCard : MonoBehaviour {
         //isAnimationProcessing = false;
         hasGem = false;
         doneEnable = false;
+        notSelected = false;
         originalPosition = gameObject.transform.position;
         manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
-
+        slotOccupied = 0;
         //initializePositions();
 	}
 	
@@ -93,18 +96,17 @@ public class MainCard : MonoBehaviour {
 
     void OnMouseOver()
     {
-        if (!doneEnable) return;
+        if (!doneEnable || notSelected) return;
         if (!moved)
         {
-            transform.Translate(0, 0, -hoverOffset, Space.Self);
-            Quaternion oldrotation = Quaternion.identity;
-            oldrotation.eulerAngles = new Vector3(315f, 0, 0);
-           // rareCard.transform.localRotation = Quaternion.identity;
-           // rareCard.transform.Translate(0, 0, -hoverOffset, Space.Self);
-           // rareCard.transform.localRotation = oldrotation;
-            moved = true;
+            translateUp();
         }
-        if (!hasGem)
+        if (hasGem && Input.GetMouseButtonDown(0))
+        {
+            destroyGem();
+            return;
+        }
+        if (!hasGem && Input.GetMouseButtonDown(0))
         {
             Quaternion rotation = Quaternion.identity;
             rotation.eulerAngles = new Vector3(270f, 0, 0);
@@ -113,20 +115,17 @@ public class MainCard : MonoBehaviour {
             hasGem = true;
             StartCoroutine(rotate());
             GetComponent<FlipCard>().isReady = true;
+            manager.cardsSelected++;
+            return;
         }
+        
+        /*
         if (GetComponent<FlipCard>().isFlipped())
         {
             hasGem = false;
             if(gemPiece != null)Destroy((gemPiece as Transform).gameObject);
             return;
         }
-        
-        /*
-        if (isAnimationProcessing || done)
-        {
-            return;
-        }
-        StartCoroutine(translate());
         */
     }
 
@@ -143,9 +142,7 @@ public class MainCard : MonoBehaviour {
 
     void OnMouseExit()
     {
-        hasGem = false;
-        if (gemPiece != null) Destroy((gemPiece as Transform).gameObject);
-        if (GetComponent<FlipCard>().isFlipped())
+        if (hasGem || notSelected)
         {
             return;
         }
@@ -155,6 +152,7 @@ public class MainCard : MonoBehaviour {
         }
         moved = false;
     }
+
     /*
     IEnumerator translate()
     {
@@ -244,4 +242,16 @@ public class MainCard : MonoBehaviour {
         positions = original;
     }
 
+    public void translateUp() {
+        transform.Translate(0, 0, -hoverOffset, Space.Self);
+        Quaternion oldrotation = Quaternion.identity;
+        oldrotation.eulerAngles = new Vector3(315f, 0, 0);
+        moved = true;
+    }
+
+    public void destroyGem()
+    {
+        hasGem = false;
+        if (gemPiece != null) Destroy((gemPiece as Transform).gameObject);
+    }
 }
