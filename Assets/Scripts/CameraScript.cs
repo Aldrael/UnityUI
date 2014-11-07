@@ -40,6 +40,7 @@ public class CameraScript : MonoBehaviour
     public GameObject packText;
     GameObject[] packButtons;
     public bool inBoosterMove;
+    public bool inSelectionMove;
     // Use this for initialization
     void Start()
     {
@@ -79,12 +80,12 @@ public class CameraScript : MonoBehaviour
         packButtons = GameObject.FindGameObjectsWithTag("Packselection");
         inBoosterMove = false;
         cardsSelected = 0;
+        inSelectionMove = false;
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
     void Update()
     {
-        //Debug.DrawLine(new Vector3(-100f, 0, 0), new Vector3(100f, 0, 0), Color.red);
         if (Input.GetKey("escape"))
             Application.Quit();
         if ((cards_up == 0) && newCardFlag)
@@ -101,6 +102,7 @@ public class CameraScript : MonoBehaviour
 
         if (cardsSelected == 5)
         {
+            inSelectionMove = true;
             float waitTime = 1.5f;
             foreach (GameObject card in cards)
             {
@@ -135,8 +137,10 @@ public class CameraScript : MonoBehaviour
         {
             if (card.GetComponent<MainCard>().hasGem)
             {
+                card.GetComponent<MainCard>().selected = true;
                 card.GetComponent<MainCard>().destroyGem();
                 iTween.MoveTo(card, iTween.Hash("time", 1f, "x", -190.2523f, "y", 66.78287f, "z", 460f, "easetype", "linear"));
+                card.GetComponent<MainCard>().inAnimation = true;
                 yield return new WaitForSeconds(1f);
                 StartCoroutine(moveLoop(card, fillSlot));
                 fillSlot--;
@@ -148,11 +152,18 @@ public class CameraScript : MonoBehaviour
     IEnumerator moveLoop(GameObject card, int slot)
     {
         int nextPath = 1;
+        card.GetComponent<MainCard>().slotOccupied = slot; 
         while (slot > nextPath)
         {
             iTween.MoveTo(card, iTween.Hash("time", 1f, "path", iTweenPath.GetPath("Arc" + nextPath.ToString()), "easetype", "linear"));
             nextPath++;
             yield return new WaitForSeconds(0.9f);
+        }
+        card.GetComponent<FlipCard>().isReady = true;
+        card.GetComponent<MainCard>().inAnimation = false;
+        if (slot == 1)
+        {
+            inSelectionMove = false;
         }
     }
 
@@ -479,4 +490,29 @@ public class CameraScript : MonoBehaviour
         boosterpacks[currentPack].GetComponent<Transform>().transform.Translate(0, 0, -8.6681f);
     }
 
+    public void donePushed()
+    {
+        foreach (GameObject card in cards)
+        {
+            if (card.GetComponent<MainCard>().selected)
+            {
+                float x;
+                if (card.GetComponent<FlipCard>().mode == 0)
+                    x = -1000f;
+                else
+                {
+                    x = 1000f;
+                }
+                iTween.MoveAdd(card, new Vector3(x, 0, 0), 3f);
+                StartCoroutine(doneDelay());
+            }
+        }
+    }
+
+    IEnumerator doneDelay()
+    {
+        yield return new WaitForSeconds(2f);
+        cards_up--;
+        newCardFlag = true;
+    }
 }

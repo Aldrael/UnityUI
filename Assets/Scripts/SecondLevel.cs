@@ -19,8 +19,8 @@ public class SecondLevel : MonoBehaviour
     bool released;
     bool inAnimation;
     float speed;
-    Queue<int> cardStack_more;
-    Queue<int> cardStack_less;
+    Stack<int> cardStack_more;
+    Stack<int> cardStack_less;
 
     // Use this for initialization
     void Start()
@@ -32,8 +32,8 @@ public class SecondLevel : MonoBehaviour
         //cards = new GameObject[cardsObtained.Length];
         currentCards = new GameObject[7];
 
-        cardStack_more = new Queue<int>(deck.cardsObtained);
-        cardStack_less = new Queue<int>();
+        cardStack_more = new Stack<int>(deck.cardsObtained);
+        cardStack_less = new Stack<int>();
   
         initCardPositions();
         initCardAngles();
@@ -205,7 +205,7 @@ public class SecondLevel : MonoBehaviour
     {
         if (currentCards[0] != null)
         {
-            cardStack_less.Enqueue(currentCards[0].GetComponentInChildren<CardSet>().index);
+            cardStack_less.Push(currentCards[0].GetComponentInChildren<CardSet>().index);
             DestroyObject(currentCards[0]);
             currentCards[0] = null;
         }
@@ -245,7 +245,7 @@ public class SecondLevel : MonoBehaviour
     {
         if (currentCards[6] != null)
         {
-            cardStack_more.Enqueue(currentCards[6].GetComponentInChildren<CardSet>().index);
+            cardStack_more.Push(currentCards[6].GetComponentInChildren<CardSet>().index);
             DestroyObject(currentCards[6]);
             currentCards[6] = null;
         }
@@ -284,7 +284,7 @@ public class SecondLevel : MonoBehaviour
 
     void instantiateMoreCard(int index)
     {
-        cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_more.Dequeue());
+        cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_more.Pop());
         currentCards[index] = Instantiate(cardTemplate, cardPositions[index], cardAngles[index]) as GameObject;
         currentCards[index].GetComponentInChildren<BackCard>().disableObject();
         if (!currentCards[index].GetComponentInChildren<CardSet>().rare)
@@ -299,7 +299,7 @@ public class SecondLevel : MonoBehaviour
 
     void instantiateLessCard(int index)
     {
-        cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_less.Dequeue());
+        cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_less.Pop());
         currentCards[index] = Instantiate(cardTemplate, cardPositions[index], cardAngles[index]) as GameObject;
         currentCards[index].GetComponentInChildren<BackCard>().disableObject();
         if (!currentCards[index].GetComponentInChildren<CardSet>().rare)

@@ -20,6 +20,9 @@ public class MainCard : MonoBehaviour {
     Vector3[] positions;
     public bool notSelected;
     public int slotOccupied;
+    public bool openMode;
+    public bool inAnimation;
+    public bool selected;
 
 	// Use this for initialization
 	void Start () {
@@ -35,6 +38,9 @@ public class MainCard : MonoBehaviour {
         originalPosition = gameObject.transform.position;
         manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
         slotOccupied = 0;
+        openMode = false;
+        inAnimation = false;
+        selected = false;
         //initializePositions();
 	}
 	
@@ -101,22 +107,26 @@ public class MainCard : MonoBehaviour {
         {
             translateUp();
         }
-        if (hasGem && Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0))
         {
-            destroyGem();
-            return;
-        }
-        if (!hasGem && Input.GetMouseButtonDown(0))
-        {
-            Quaternion rotation = Quaternion.identity;
-            rotation.eulerAngles = new Vector3(270f, 0, 0);
-            gem1.localScale = new Vector3(5f, 5f, 5f);
-            gemPiece = Instantiate(gem1, new Vector3(transform.position.x, transform.position.y + 80, transform.position.z), rotation);
-            hasGem = true;
-            StartCoroutine(rotate());
-            GetComponent<FlipCard>().isReady = true;
-            manager.cardsSelected++;
-            return;
+            if (hasGem && !manager.inSelectionMove)
+            {
+                manager.cardsSelected--;
+                destroyGem();
+                return;
+            }
+            else if (!GetComponent<FlipCard>().isReady && !inAnimation && !manager.inSelectionMove)
+            {
+                Quaternion rotation = Quaternion.identity;
+                rotation.eulerAngles = new Vector3(270f, 0, 0);
+                gem1.localScale = new Vector3(5f, 5f, 5f);
+                gemPiece = Instantiate(gem1, new Vector3(transform.position.x, transform.position.y + 80, transform.position.z), rotation);
+                hasGem = true;
+                StartCoroutine(rotate());
+                //GetComponent<FlipCard>().isReady = true;
+                manager.cardsSelected++;
+                return;
+            }
         }
         
         /*
@@ -142,15 +152,18 @@ public class MainCard : MonoBehaviour {
 
     void OnMouseExit()
     {
+        
         if (hasGem || notSelected)
         {
             return;
         }
-        if (moved)
+        
+        if (moved && !selected)
         {
             resetZoom();
+            moved = false;
         }
-        moved = false;
+
     }
 
     /*
@@ -253,5 +266,18 @@ public class MainCard : MonoBehaviour {
     {
         hasGem = false;
         if (gemPiece != null) Destroy((gemPiece as Transform).gameObject);
+    }
+
+    public void reset()
+    {
+        resetZoom();
+        moved = false;
+        hasGem = false;
+        doneEnable = false;
+        notSelected = false;
+        slotOccupied = 0;
+        openMode = false;
+        inAnimation = false;
+        selected = false;
     }
 }

@@ -5,7 +5,7 @@ public class RandomCard : MonoBehaviour
 {
 
     public Sprite[] cards;
-
+    const int randomReroll = 1;
     public bool rare;
     private int index;
     public int Index
@@ -57,6 +57,12 @@ public class RandomCard : MonoBehaviour
         }
 
         index = Random.Range(lowrange, highrange);
+        int reroll = randomReroll;
+        while ((reroll > 0) && (isRare(index)))
+        {
+            index = Random.Range(lowrange, highrange);
+            reroll--;
+        }
         //index = 0;
         rare = isRare(index);
         spriteRenderer.sprite = cards[index];

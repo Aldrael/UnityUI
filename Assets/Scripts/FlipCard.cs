@@ -7,13 +7,14 @@ public class FlipCard : MonoBehaviour {
     public float rotateDegreePerSecond;
     public bool isFaceUp = false;
     float alphaSpeed;
+    const float rareOffset = 0.5f;
 
     const float FLIP_LIMIT_DEGREE = 180f;
 
     float waitTime;
     bool isAnimationProcessing = false;
     bool cw;
-    int mode;
+    public int mode;
     public bool isReady;
 
     public Quaternion originalRotationValue;
@@ -46,31 +47,34 @@ public class FlipCard : MonoBehaviour {
 	void Update () {
       
 	}
-    /*
+    
     void OnMouseOver()
     {
         if (isAnimationProcessing || isFaceUp || !isReady)
         {
             return;
         }
-        if (Input.GetMouseButton(0))
+        else
         {
-            GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
-            mode = 0;
-            OnLeftClick();
-        }
+            if (Input.GetMouseButton(0))
+            {
+                GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
+                mode = 0;
+                OnLeftClick();
+            }
 
-        if (Input.GetMouseButton(1))
-        {
-            GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
-            mode = 1;
-            OnRightClick();
-        }
+            if (Input.GetMouseButton(1))
+            {
+                GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
+                mode = 1;
+                OnRightClick();
+            }
 
-        if (Input.GetMouseButton(2))
-            Debug.Log("Pressed middle click.");
+            if (Input.GetMouseButton(2))
+                Debug.Log("Pressed middle click.");
+        }
     }
-    */
+
     public void CameraFlip()
     {
         GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
@@ -161,7 +165,7 @@ public class FlipCard : MonoBehaviour {
             yield return new WaitForSeconds(waitTime);
         }
         CameraScript manager = GameObject.FindWithTag("Manager").GetComponent<CameraScript>();
-        manager.cardCounter();
+        if(mode != 2) manager.cardCounter();
         isFaceUp = true;
         isAnimationProcessing = false;
         
@@ -169,10 +173,10 @@ public class FlipCard : MonoBehaviour {
     public void resetCard()
     {
         rareCard.disableRare();
-        if (mode == 0)
+        if ((mode == 0) ||(mode == 2))
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, originalRotationValue, Time.time * 1.0f);
-            rareCard.transform.localPosition = new Vector3(0, 0, -2f);
+            rareCard.transform.localPosition = new Vector3(0, 0, -rareOffset);
         }
         else if (mode == 1)
         {
@@ -183,10 +187,9 @@ public class FlipCard : MonoBehaviour {
             sprite.color = new Vector4(1f, 1f, 1f, 1f);
         }
         isFaceUp = false;
-        MainCard mainCard = GetComponent<MainCard>();
-        mainCard.moved = false;
-        mainCard.resetZoom();
         isReady = false;
+        MainCard mainCard = GetComponent<MainCard>();
+        mainCard.reset();
         
         //GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
     }
@@ -224,7 +227,7 @@ public class FlipCard : MonoBehaviour {
             rareCard.enableRare();
             if (mode == 0)
             {
-                rareCard.transform.localPosition = new Vector3(0, 0, 2f);
+                rareCard.transform.localPosition = new Vector3(0, 0, rareOffset);
             }
         }
     }
