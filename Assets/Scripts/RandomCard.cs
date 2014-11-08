@@ -7,6 +7,7 @@ public class RandomCard : MonoBehaviour
     public Sprite[] cards;
     const int randomReroll = 1;
     public bool rare;
+    public int rareIndex;
     private int index;
     public int Index
     {
@@ -31,9 +32,10 @@ public class RandomCard : MonoBehaviour
     void Start()
     {
         manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
-        randomizeCards(manager.currentPack);
+        randomizeCards(manager.currentPack, false);
         gameObject.tag = "Card";
         rare = false;
+        rareIndex = 0;
     }
 
     // Update is called once per frame
@@ -42,7 +44,7 @@ public class RandomCard : MonoBehaviour
 
     }
 
-    public void randomizeCards(int booster)
+    public void randomizeCards(int booster, bool cheat)
     {
         Sprite backcard = GameObject.Find("CardBack").GetComponent<SpriteRenderer>().sprite;
 
@@ -63,7 +65,8 @@ public class RandomCard : MonoBehaviour
             index = Random.Range(lowrange, highrange);
             reroll--;
         }
-        //index = 0;
+
+        if (cheat) index = 0;
         rare = isRare(index);
         spriteRenderer.sprite = cards[index];
         boundsthis = spriteRenderer.sprite.bounds;
@@ -80,13 +83,27 @@ public class RandomCard : MonoBehaviour
         switch (index)
         {
             case 0:
+                rareIndex = 0;
                 return true;
             case 5:
+                rareIndex = 1;
                 return true;
             case 10:
+                rareIndex = 2;
                 return true;
             default:
+                rareIndex = 0;
                 return false;
         }
+    }
+
+    public void disableObject()
+    {
+        gameObject.SetActive(false);
+    }
+
+    public void enableObject()
+    {
+        gameObject.SetActive(true);
     }
 }

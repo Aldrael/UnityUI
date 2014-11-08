@@ -259,7 +259,7 @@ public class CameraScript : MonoBehaviour
         foreach (GameObject card in cards)
         {
             RandomCard randomCard = card.GetComponent<RandomCard>();
-            randomCard.randomizeCards(currentPack);
+            randomCard.randomizeCards(currentPack, false);
         }
     }
 

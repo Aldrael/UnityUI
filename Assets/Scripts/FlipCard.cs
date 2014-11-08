@@ -29,6 +29,11 @@ public class FlipCard : MonoBehaviour {
 
     RandomCard randomCard;
 
+    rippleSharp ripple;
+
+    BackCard Gameback;
+    bool cheat;
+
 	// Use this for initialization
 	void Start () {
         waitTime = 1.0f / fps;
@@ -41,11 +46,25 @@ public class FlipCard : MonoBehaviour {
         rareCard = GetComponentInChildren<RareCard>();
         randomCard = GetComponentInChildren<RandomCard>();
         rareCard.disableRare();
+        ripple = GetComponentInChildren<rippleSharp>();
+        ripple.disableObject();
+        Gameback = GetComponentInChildren<BackCard>();
+        cheat = false;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-      
+        if (isAnimationProcessing || isFaceUp || !isReady)
+        {
+            return;
+        }
+        else
+        {
+            if (Input.GetKeyDown("space"))
+            {
+                cheat = true;
+            }
+        }
 	}
     
     void OnMouseOver()
@@ -58,14 +77,14 @@ public class FlipCard : MonoBehaviour {
         {
             if (Input.GetMouseButton(0))
             {
-                GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
+                randomCard.randomizeCards(manager.currentPack, cheat);
                 mode = 0;
                 OnLeftClick();
             }
 
             if (Input.GetMouseButton(1))
             {
-                GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
+                randomCard.randomizeCards(manager.currentPack, cheat);
                 mode = 1;
                 OnRightClick();
             }
@@ -77,7 +96,7 @@ public class FlipCard : MonoBehaviour {
 
     public void CameraFlip()
     {
-        GetComponentInChildren<RandomCard>().randomizeCards(manager.currentPack);
+        randomCard.randomizeCards(manager.currentPack, false);
         mode = 2;
         OnLeftClick();
     }
@@ -96,7 +115,7 @@ public class FlipCard : MonoBehaviour {
     {
         float alpha = 1.0f;
         isAnimationProcessing = true;
-
+        checkRare();
         bool done = false;
         bool checkonce = true;
         while (!done)
@@ -107,7 +126,7 @@ public class FlipCard : MonoBehaviour {
             sprite.color = new Vector4(1f, 1f, 1f, alpha);
             if ((sprite.color.a < 0.5f) && (checkonce))
             {
-                checkRare();
+                //checkRare();
                 checkonce = false;
             }
             if (sprite.color.a < 0.01f)
@@ -121,7 +140,8 @@ public class FlipCard : MonoBehaviour {
         manager.cardCounter();
         isFaceUp = true;
         isAnimationProcessing = false;
-        
+        Gameback.disableObject();
+        if (randomCard.rare) ripple.ripple();
     }
 
     void OnLeftClick()
@@ -168,11 +188,12 @@ public class FlipCard : MonoBehaviour {
         if(mode != 2) manager.cardCounter();
         isFaceUp = true;
         isAnimationProcessing = false;
-        
+        Gameback.disableObject();
+        if(randomCard.rare) ripple.ripple();
     }
     public void resetCard()
     {
-        rareCard.disableRare();
+        Gameback.enableObject();
         if ((mode == 0) ||(mode == 2))
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, originalRotationValue, Time.time * 1.0f);
@@ -180,12 +201,29 @@ public class FlipCard : MonoBehaviour {
         }
         else if (mode == 1)
         {
-            //RandomCard randCard = GetComponentInChildren<RandomCard>();
-           // randCard.GetComponent<Transform>().localScale = new Vector3(-1f, 1f, 1f);
-            BackCard backCard = GetComponentInChildren<BackCard>();
-            SpriteRenderer sprite = backCard.GetComponent<SpriteRenderer>();
-            sprite.color = new Vector4(1f, 1f, 1f, 1f);
+            
+            if (randomCard.rare)
+            {
+                Vector3 oldTransform = ripple.transform.localScale;
+                ripple.transform.localScale = new Vector3(-oldTransform.x, oldTransform.y, -oldTransform.z);
+                Quaternion rotation = Quaternion.identity;
+                rotation.eulerAngles = new Vector3(90f, 0, 0);
+                ripple.transform.localRotation = rotation;
+            }
+            else
+            {
+                //RandomCard randCard = GetComponentInChildren<RandomCard>();
+                // randCard.GetComponent<Transform>().localScale = new Vector3(-1f, 1f, 1f);
+                BackCard backCard = GetComponentInChildren<BackCard>();
+                SpriteRenderer sprite = backCard.GetComponent<SpriteRenderer>();
+                sprite.color = new Vector4(1f, 1f, 1f, 1f);
+            }
         }
+        cheat = false;
+        rareCard.disableRare();
+        
+        randomCard.enableObject();
+        ripple.enableObject(0);
         isFaceUp = false;
         isReady = false;
         MainCard mainCard = GetComponent<MainCard>();
@@ -229,6 +267,20 @@ public class FlipCard : MonoBehaviour {
             {
                 rareCard.transform.localPosition = new Vector3(0, 0, rareOffset);
             }
+            ripple.enableObject(randomCard.rareIndex);
+            if (mode == 1)
+            {
+                Vector3 oldTransform = ripple.transform.localScale;
+                ripple.transform.localScale = new Vector3(-oldTransform.x, oldTransform.y, -oldTransform.z);
+                Quaternion rotation = Quaternion.identity;
+                rotation.eulerAngles = new Vector3(-90f,0,0);
+                ripple.transform.localRotation = rotation;
+            }
+            randomCard.disableObject();
+        }
+        else
+        {
+            ripple.disableObject();
         }
     }
 
