@@ -41,6 +41,7 @@ public class CameraScript : MonoBehaviour
     GameObject[] packButtons;
     public bool inBoosterMove;
     public bool inSelectionMove;
+    public bool notInZone;
     // Use this for initialization
     void Start()
     {
@@ -81,6 +82,7 @@ public class CameraScript : MonoBehaviour
         inBoosterMove = false;
         cardsSelected = 0;
         inSelectionMove = false;
+        notInZone = true;
         //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
     }
 
@@ -362,7 +364,7 @@ public class CameraScript : MonoBehaviour
 
     public void cutPacks()
     {
-        if (inScaling || inBoosterMove)
+        if (inScaling || inBoosterMove || notInZone)
         {
             return;
         }

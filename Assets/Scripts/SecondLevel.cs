@@ -21,6 +21,7 @@ public class SecondLevel : MonoBehaviour
     float speed;
     Stack<int> cardStack_more;
     Stack<int> cardStack_less;
+    bool zoomed;
 
     // Use this for initialization
     void Start()
@@ -43,32 +44,7 @@ public class SecondLevel : MonoBehaviour
         released = true;
         inAnimation = false;
         speed = 0.75f;
-
-        /*
-        foreach (int value in cardsObtained)
-        {
-            cardTemplate.GetComponentInChildren<CardSet>().setCard(value);
-           // cards[cardindex] = Instantiate(cardTemplate, new Vector3(currentx, 0, 250f), Quaternion.identity) as GameObject;
-           // cards[cardindex].GetComponentInChildren<BackCard>().disableObject();
-           // cardindex++;
-           // currentx += 5f;
-        }
-        */
-
-        /*
-        cardsObtained.AddRange(deck.cardsObtained);
-        //foreach (int value in cardsObtained) print(value);
-        deckDisplay = GameObject.FindGameObjectWithTag("Deckdisplay").GetComponent<DisplayTextDeck>();
-        int[] cards = new int[5];
-        cards = sortCards(cardsObtained);
-        displayText = new StringBuilder();
-        for (int i = 0; i < 5; i++)
-        {
-            displayText.AppendLine(cardNames(i) + ": " + cards[i].ToString());
-        }
-        deckDisplay.displayText(displayText.ToString());
-        //DontDestroyOnLoad(this);
-        */
+        zoomed = false;
     }
 
     // Update is called once per frame
@@ -76,7 +52,7 @@ public class SecondLevel : MonoBehaviour
     {
         if (Input.GetKey("escape"))
             Application.LoadLevel(0);
-        if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null))
+        if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null) && !zoomed)
         {
             inAnimation = true;
             released = false;
@@ -86,7 +62,7 @@ public class SecondLevel : MonoBehaviour
         {
             released = true;
         }
-        if (Input.GetKey("right") && released && !inAnimation && (currentCards[2] != null))
+        if (Input.GetKey("right") && released && !inAnimation && (currentCards[2] != null) && !zoomed)
         {
             inAnimation = true;
             released = false;
@@ -95,6 +71,16 @@ public class SecondLevel : MonoBehaviour
         if (Input.GetKeyUp("right"))
         {
             released = true;
+        }
+        if (Input.GetKeyDown("up") && !zoomed)
+        {
+            iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomIn"), "time", 1f));
+            zoomed = true;
+        }
+        else if (Input.GetKeyDown("up") && zoomed)
+        {
+            iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomOut"), "time", 1f));
+            zoomed = false;
         }
 
     }
