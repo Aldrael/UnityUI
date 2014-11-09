@@ -29,6 +29,8 @@ public class BoosterPack : MonoBehaviour
         //print("Sliced");
         //rigidbody2D.AddForce(new Vector2( (Random.Range(-200f,200f)) , (Random.Range(1000f,10000f))));
         packButtons = GameObject.FindGameObjectsWithTag("Packselection");
+        manager.disableCut();
+        manager.packholder.GetComponent<BoxCollider>().enabled = false;
         foreach (GameObject packButton in packButtons)
         {
             packButton.GetComponent<PackSelection>().disableButton();

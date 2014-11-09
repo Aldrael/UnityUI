@@ -10,7 +10,7 @@ public class CameraScript : MonoBehaviour
     private bool mute;
     private float current_volume;
     public GameObject[] cards, boosterpacks;
-    public GameObject doneholder, newholder, packholder;
+    public GameObject doneholder, newholder, packholder, cutholder;
     public int cards_up, cardsSelected;
     public List<int> cardsObtained;
     public Texture2D cursorTexture;
@@ -42,9 +42,11 @@ public class CameraScript : MonoBehaviour
     public bool inBoosterMove;
     public bool inSelectionMove;
     public bool notInZone;
+    public Vector3 boosterStartPosition;
     // Use this for initialization
     void Start()
     {
+        boosterStartPosition = packholder.transform.position;
         mute = false;
         current_volume = 0.25f;
         AudioListener.volume = current_volume;
@@ -92,8 +94,11 @@ public class CameraScript : MonoBehaviour
             Application.Quit();
         if ((cards_up == 0) && newCardFlag)
         {
+            
             newCardFlag = false;
             resetAllCards();
+            enableCut();
+            packholder.GetComponent<BoxCollider>().enabled = true;
             //newholder.GetComponent<NewCard>().toggleNew();
             enableBooster();
             foreach (GameObject packButton in packButtons)
@@ -426,6 +431,7 @@ public class CameraScript : MonoBehaviour
         }
         inScaling = false;
         Destroy(piece);
+        iTween.MoveTo(packholder, boosterStartPosition, 0f);
     }
 
     public void disableBooster(int index)
@@ -447,17 +453,23 @@ public class CameraScript : MonoBehaviour
 
     public void increPack()
     {
+        /*
         if (inBoosterMove)
         {
             return;
         }
+        */
         int previous = currentPack++;
         if (currentPack > boosterpacks.Length - 1) currentPack = 0;
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
+        disableBooster(previous);
+        /*
+        
         iTween.MoveTo(boosterpacks[currentPack], iTween.Hash("path", iTweenPath.GetPath("ForwardPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
         iTween.MoveTo(boosterpacks[previous], iTween.Hash("path", iTweenPath.GetPath("NextPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
         StartCoroutine(waitMove(previous));
+        */
     }
 
     IEnumerator waitMove(int previous)
@@ -470,17 +482,23 @@ public class CameraScript : MonoBehaviour
 
     public void decrePack()
     {
+        /*
         if (inBoosterMove)
         {
             return;
         }
+        */
         int previous = currentPack--;
         if (currentPack < 0) currentPack = boosterpacks.Length - 1;
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
+        disableBooster(previous);
+        /*
+        
         iTween.MoveTo(boosterpacks[currentPack], iTween.Hash("path", iTweenPath.GetPath("PreviousPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
         iTween.MoveTo(boosterpacks[previous], iTween.Hash("path", iTweenPath.GetPath("BackPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
         StartCoroutine(waitMove(previous));
+        */
     }
 
     public void initBoosters()
@@ -516,5 +534,15 @@ public class CameraScript : MonoBehaviour
         yield return new WaitForSeconds(2f);
         cards_up--;
         newCardFlag = true;
+    }
+
+    public void disableCut()
+    {
+        cutholder.SetActive(false);
+    }
+
+    public void enableCut()
+    {
+        cutholder.SetActive(true);
     }
 }
