@@ -43,6 +43,12 @@ public class CameraScript : MonoBehaviour
     public bool inSelectionMove;
     public bool notInZone;
     public Vector3 boosterStartPosition;
+
+    //server
+    int playerCount = 8;
+    int serverPort = 23467;
+    bool useNAT = false;
+    bool serverStarted = false;
     // Use this for initialization
     void Start()
     {
@@ -545,4 +551,22 @@ public class CameraScript : MonoBehaviour
     {
         cutholder.SetActive(true);
     }
+
+    public void StartServer()
+    {
+        if (!serverStarted)
+        {
+            NetworkConnectionError state = Network.InitializeServer(playerCount, serverPort, useNAT);
+            if (state == NetworkConnectionError.NoError)
+            {
+                MasterServerUtils.RegisterWithMasterServer("Unity UI CCG", "This is a comment about TestServer");
+                serverStarted = true;
+            }
+            else
+            {
+                Debug.Log("Couldn't initialize server! " + state);
+            }
+        }
+    }
+
 }
