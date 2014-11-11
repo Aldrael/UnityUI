@@ -75,12 +75,15 @@ public class MessageWindow : ScriptableObject {
 
 		}
 	}
-
+    public MessageWindow()
+    {
+      
+    }
 	public MessageWindow(Vector2 size, GUISkin skin) {
 		this.size = size;
 		this.skin = skin;
 		if(skin.FindStyle("messageitem") == null) {
-			Debug.Log("Skin does not contain 'messageitem' style, reverting to default.");
+			//Debug.Log("Skin does not contain 'messageitem' style, reverting to default.");
 			useCustomStyle = false;
 		}
 		scrollBarWidth = skin.verticalScrollbar.fixedWidth;

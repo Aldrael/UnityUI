@@ -38,9 +38,9 @@ public class Chatter : MonoBehaviour
 
         entireChatArea = new Rect(chatInputPosition.x, chatInputPosition.y, Mathf.Max(chatInputSize.x, chatOutputSize.x), chatInputSize.y + chatOutputSize.y);
 
-        messageWindow = new MessageWindow(chatOutputSize, chatterSkin);
-        //messageWindow = ScriptableObject.CreateInstance<MessageWindow>();
-        //messageWindow.setMessageWindow(chatOutputSize, chatterSkin);
+        //messageWindow = new MessageWindow(chatOutputSize, chatterSkin);
+        messageWindow = ScriptableObject.CreateInstance<MessageWindow>();
+        messageWindow.setMessageWindow(chatOutputSize, chatterSkin);
     }
 
     // Update is called once per frame

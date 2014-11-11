@@ -4,10 +4,12 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Text;
 
+[RequireComponent (typeof (NetworkView))]
 public class SecondLevel : MonoBehaviour
 {
     //public List<int> cardsObtained;
     public int[] cardsObtained;
+    public int[] cardsReceived;
     DisplayTextDeck deckDisplay;
     StringBuilder displayText;
     public GameObject cardTemplate;
@@ -27,6 +29,8 @@ public class SecondLevel : MonoBehaviour
     int serverPort = 23467;
     bool useNAT = false;
     bool serverStarted = false;
+    string sendCards;
+    bool connected = false;
     // Use this for initialization
     void Start()
     {
@@ -36,9 +40,9 @@ public class SecondLevel : MonoBehaviour
         cardsObtained = deck.cardsObtained.ToArray();
         //cards = new GameObject[cardsObtained.Length];
         currentCards = new GameObject[7];
-
         cardStack_more = new Stack<int>(deck.cardsObtained);
         cardStack_less = new Stack<int>();
+        sendCards = string.Join(",", new List<int>(cardsObtained).ConvertAll(i => i.ToString()).ToArray());
   
         initCardPositions();
         initCardAngles();
@@ -89,6 +93,22 @@ public class SecondLevel : MonoBehaviour
 
     }
 
+    [RPC]
+    public void PrintCards(string cards)
+    {
+        print(cards);
+    }
+
+    void OnConnectedToServer()
+    {
+        connected = true;
+    }
+
+    void OnServerInitialized()
+    {
+        connected = true;
+    }
+
     int[] sortCards(List<int> deck)
     {
         int[] cards = new int[5];
@@ -136,13 +156,13 @@ public class SecondLevel : MonoBehaviour
     void initCardPositions()
     {
         cardPositions = new Vector3[7];
-        cardPositions[0] = new Vector3(-245.0984f, -225.8663f, 250f);
-        cardPositions[1] = new Vector3(-209.5863f, -116.39f, 250f);
-        cardPositions[2] = new Vector3(-114.596f, -27.97304f, 250f);
-        cardPositions[3] = new Vector3(0, 0, 250f);
-        cardPositions[4] = new Vector3(114.596f, -27.97304f, 250f);
-        cardPositions[5] = new Vector3(209.5863f, -116.39f, 250f);
-        cardPositions[6] = new Vector3(245.0984f, -225.8663f, 250f);
+        cardPositions[0] = new Vector3(-245.0984f, -260.8663f, 250f);
+        cardPositions[1] = new Vector3(-209.5863f, -151.39f, 250f);
+        cardPositions[2] = new Vector3(-114.596f, -62.973f, 250f);
+        cardPositions[3] = new Vector3(0, -35f, 250f);
+        cardPositions[4] = new Vector3(114.596f, -62.973f, 250f);
+        cardPositions[5] = new Vector3(209.5863f, -151.39f, 250f);
+        cardPositions[6] = new Vector3(245.0984f, -260.8663f, 250f);
     }
 
     void initCardAngles()
@@ -317,5 +337,30 @@ public class SecondLevel : MonoBehaviour
                 Debug.Log("Couldn't initialize server! " + state);
             }
         }
+    }
+
+    public void SendCards()
+    {
+        if (connected)
+        {
+            networkView.RPC("ReceiveCards", RPCMode.Others, sendCards);
+        }
+    }
+
+    [RPC]
+    public void ReceiveCards(string cards)
+    {
+        List<int> received = new List<int>();
+        if (cards != null)
+        {
+            foreach (string card in cards.Split(','))
+            {
+                int num;
+                if (int.TryParse(card, out num))
+                    received.Add(num);
+            }
+        }
+        cardsReceived = received.ToArray();
+        print(cardsReceived);
     }
 }
