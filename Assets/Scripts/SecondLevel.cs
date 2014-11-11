@@ -14,15 +14,15 @@ public class SecondLevel : MonoBehaviour
     StringBuilder displayText;
     public GameObject cardTemplate;
     //GameObject[] cards;
-    Vector3[] cardPositions;
-    Quaternion[] cardAngles;
+    Vector3[] cardPositions, cardPositionsReceived;
+    Quaternion[] cardAngles, cardAnglesReceived;
 
-    GameObject[] currentCards;
+    GameObject[] currentCards, currentReceived;
     bool released;
     bool inAnimation;
     float speed;
-    Stack<int> cardStack_more;
-    Stack<int> cardStack_less;
+    Stack<int> cardStack_more, receiveStack_more;
+    Stack<int> cardStack_less, receiveStack_less;
     bool zoomed;
     //server
     int playerCount = 8;
@@ -31,10 +31,15 @@ public class SecondLevel : MonoBehaviour
     bool serverStarted = false;
     string sendCards;
     bool connected = false;
+
+    public ShowCards showCards;
+    DeckScript deck;
+
     // Use this for initialization
     void Start()
     {
-        DeckScript deck = GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>();
+        deck = GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>();
+
         //cardsObtained.AddRange(deck.cardsObtained);
         // cards = new GameObject[cardsObtained.Count];
         cardsObtained = deck.cardsObtained.ToArray();
@@ -53,6 +58,8 @@ public class SecondLevel : MonoBehaviour
         inAnimation = false;
         speed = 0.75f;
         zoomed = false;
+        showCards = GameObject.Find("ShowCards").GetComponent<ShowCards>();
+        showCards.DisableObject();
     }
 
     // Update is called once per frame
@@ -165,6 +172,18 @@ public class SecondLevel : MonoBehaviour
         cardPositions[6] = new Vector3(245.0984f, -260.8663f, 250f);
     }
 
+    void initCardPositionsReceive()
+    {
+        cardPositionsReceived = new Vector3[7];
+        cardPositionsReceived[0] = new Vector3(245.0984f, 260.8663f, 250f);
+        cardPositionsReceived[1] = new Vector3(209.5863f, 151.39f, 250f);
+        cardPositionsReceived[2] = new Vector3(114.596f, 62.973f, 250f);
+        cardPositionsReceived[3] = new Vector3(0, 35f, 250f);
+        cardPositionsReceived[4] = new Vector3(-114.596f, 62.973f, 250f);
+        cardPositionsReceived[5] = new Vector3(-209.5863f, 151.39f, 250f);
+        cardPositionsReceived[6] = new Vector3(-245.0984f, 260.8663f, 250f);
+    }
+
     void initCardAngles()
     {
         cardAngles = new Quaternion[7];
@@ -179,6 +198,22 @@ public class SecondLevel : MonoBehaviour
         cardAngles[4].eulerAngles = new Vector3(0, 0, -30f);
         cardAngles[5].eulerAngles = new Vector3(0, 0, -60f);
         cardAngles[6].eulerAngles = new Vector3(0, 0, -90f);
+    }
+
+    void initCardAnglesReceived()
+    {
+        cardAnglesReceived = new Quaternion[7];
+        for (int i = 0; i < 7; i++)
+        {
+            cardAnglesReceived[i] = Quaternion.identity;
+        }
+        cardAnglesReceived[0].eulerAngles = new Vector3(0, 0, 90f);
+        cardAnglesReceived[1].eulerAngles = new Vector3(0, 0, 60f);
+        cardAnglesReceived[2].eulerAngles = new Vector3(0, 0, 30f);
+        cardAnglesReceived[3].eulerAngles = new Vector3(0, 0, 0f);
+        cardAnglesReceived[4].eulerAngles = new Vector3(0, 0, -30f);
+        cardAnglesReceived[5].eulerAngles = new Vector3(0, 0, -60f);
+        cardAnglesReceived[6].eulerAngles = new Vector3(0, 0, -90f);
     }
 
     void layoutCards(int amount)
@@ -208,6 +243,37 @@ public class SecondLevel : MonoBehaviour
                 instantiateMoreCard(4);
                 instantiateMoreCard(5);
                 instantiateMoreCard(6);
+                break;
+        }
+    }
+
+    void layoutReceivedCards(int amount)
+    {
+        switch (amount)
+        {
+            case 0:
+                {
+                    return;
+                }
+            case 1:
+                {
+                    instantiateMoreReceiveCard(3);
+                    break;
+                }
+            case 2:
+                instantiateMoreReceiveCard(3);
+                instantiateMoreReceiveCard(4);
+                break;
+            case 3:
+                instantiateMoreReceiveCard(3);
+                instantiateMoreReceiveCard(4);
+                instantiateMoreReceiveCard(5);
+                break;
+            default:
+                instantiateMoreReceiveCard(3);
+                instantiateMoreReceiveCard(4);
+                instantiateMoreReceiveCard(5);
+                instantiateMoreReceiveCard(6);
                 break;
         }
     }
@@ -307,6 +373,21 @@ public class SecondLevel : MonoBehaviour
         }
     }
 
+    void instantiateMoreReceiveCard(int index)
+    {
+        cardTemplate.GetComponentInChildren<CardSet>().setCard(receiveStack_more.Pop());
+        currentReceived[index] = Instantiate(cardTemplate, cardPositionsReceived[index], cardAnglesReceived[index]) as GameObject;
+        currentReceived[index].GetComponentInChildren<BackCard>().disableObject();
+        if (!currentReceived[index].GetComponentInChildren<CardSet>().rare)
+        {
+            currentReceived[index].GetComponentInChildren<RareCard>().disableRare();
+        }
+        else
+        {
+            currentReceived[index].GetComponentInChildren<RareCard>().enableRare();
+        }
+    }
+
     void instantiateLessCard(int index)
     {
         cardTemplate.GetComponentInChildren<CardSet>().setCard(cardStack_less.Pop());
@@ -361,6 +442,14 @@ public class SecondLevel : MonoBehaviour
             }
         }
         cardsReceived = received.ToArray();
-        print(cardsReceived);
+
+        currentReceived = new GameObject[7];
+        receiveStack_more = new Stack<int>(cardsReceived);
+        receiveStack_less = new Stack<int>();
+
+        initCardPositionsReceive();
+        initCardAnglesReceived();
+
+        layoutReceivedCards(receiveStack_more.Count);
     }
 }

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 [RequireComponent(typeof(NetworkView))]
 public class Chatter : MonoBehaviour
 {
-
+    SecondLevel manager;
     MessageWindow messageWindow;
     string chatInput = "";
 
@@ -20,7 +20,7 @@ public class Chatter : MonoBehaviour
     Vector2 chatInputPosition = new Vector2(0, Screen.height - 25);
 
     string myName = "NoName";
-    bool nameSet = false;
+    public bool nameSet = false;
 
     bool connected = false;
 
@@ -41,6 +41,7 @@ public class Chatter : MonoBehaviour
         //messageWindow = new MessageWindow(chatOutputSize, chatterSkin);
         messageWindow = ScriptableObject.CreateInstance<MessageWindow>();
         messageWindow.setMessageWindow(chatOutputSize, chatterSkin);
+        manager = GameObject.Find("_Manager").GetComponent<SecondLevel>();
     }
 
     // Update is called once per frame
@@ -60,6 +61,7 @@ public class Chatter : MonoBehaviour
     void SetName(string newName)
     {
         //Only after setting a name will the player be joined to the chat
+        manager.showCards.EnableObject();
         nameSet = true;
         if (Network.isServer)
         {
