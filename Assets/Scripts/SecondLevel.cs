@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine.UI;
 using System.Text;
 
-[RequireComponent (typeof (NetworkView))]
+[RequireComponent(typeof(NetworkView))]
 public class SecondLevel : MonoBehaviour
 {
     //public List<int> cardsObtained;
@@ -34,24 +34,21 @@ public class SecondLevel : MonoBehaviour
 
     public ShowCards showCards;
     DeckScript deck;
+    public int currentIndex;
 
     // Use this for initialization
     void Start()
     {
         deck = GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>();
-
-        //cardsObtained.AddRange(deck.cardsObtained);
-        // cards = new GameObject[cardsObtained.Count];
         cardsObtained = deck.cardsObtained.ToArray();
-        //cards = new GameObject[cardsObtained.Length];
+
         currentCards = new GameObject[7];
         cardStack_more = new Stack<int>(deck.cardsObtained);
         cardStack_less = new Stack<int>();
         sendCards = string.Join(",", new List<int>(cardsObtained).ConvertAll(i => i.ToString()).ToArray());
-  
+
         initCardPositions();
         initCardAngles();
-        // layoutCards(cardsObtained.Count);
 
         layoutCards(cardStack_more.Count);
         released = true;
@@ -60,6 +57,7 @@ public class SecondLevel : MonoBehaviour
         zoomed = false;
         showCards = GameObject.Find("ShowCards").GetComponent<ShowCards>();
         showCards.DisableObject();
+        currentIndex = 0;
     }
 
     // Update is called once per frame
@@ -72,6 +70,8 @@ public class SecondLevel : MonoBehaviour
             inAnimation = true;
             released = false;
             shiftLeft();
+            currentIndex++;
+            if (connected) shiftLeftSend();
         }
         if (Input.GetKeyUp("left"))
         {
@@ -82,6 +82,8 @@ public class SecondLevel : MonoBehaviour
             inAnimation = true;
             released = false;
             shiftRight();
+            currentIndex--;
+            if (connected) shiftRightSend();
         }
         if (Input.GetKeyUp("right"))
         {
@@ -207,13 +209,13 @@ public class SecondLevel : MonoBehaviour
         {
             cardAnglesReceived[i] = Quaternion.identity;
         }
-        cardAnglesReceived[0].eulerAngles = new Vector3(0, 0, 90f);
-        cardAnglesReceived[1].eulerAngles = new Vector3(0, 0, 60f);
-        cardAnglesReceived[2].eulerAngles = new Vector3(0, 0, 30f);
-        cardAnglesReceived[3].eulerAngles = new Vector3(0, 0, 0f);
-        cardAnglesReceived[4].eulerAngles = new Vector3(0, 0, -30f);
-        cardAnglesReceived[5].eulerAngles = new Vector3(0, 0, -60f);
-        cardAnglesReceived[6].eulerAngles = new Vector3(0, 0, -90f);
+        cardAnglesReceived[0].eulerAngles = new Vector3(-180f, 0, -90f);
+        cardAnglesReceived[1].eulerAngles = new Vector3(-180f, 0, -60f);
+        cardAnglesReceived[2].eulerAngles = new Vector3(-180f, 0, -30f);
+        cardAnglesReceived[3].eulerAngles = new Vector3(-180f, 0, 0f);
+        cardAnglesReceived[4].eulerAngles = new Vector3(-180f, 0, 30f);
+        cardAnglesReceived[5].eulerAngles = new Vector3(-180f, 0, 60f);
+        cardAnglesReceived[6].eulerAngles = new Vector3(-180f, 0, 90f);
     }
 
     void layoutCards(int amount)
@@ -293,7 +295,7 @@ public class SecondLevel : MonoBehaviour
                 iTween.RotateAdd(currentCards[i], new Vector3(0, 0, 30f), speed);
             }
         }
-        
+
         GameObject[] newAr = new GameObject[currentCards.Length];
 
         for (int i = 1; i < currentCards.Length; i++)
@@ -317,6 +319,55 @@ public class SecondLevel : MonoBehaviour
         StartCoroutine(waitAnimation());
     }
 
+    [RPC]
+    void shiftLeftReceive(bool quick)
+    {
+        if (currentReceived[0] != null)
+        {
+            receiveStack_less.Push(currentReceived[0].GetComponentInChildren<CardSet>().index);
+            DestroyObject(currentReceived[0]);
+            currentReceived[0] = null;
+        }
+        for (int i = 1; i < 7; i++)
+        {
+            if (currentReceived[i] != null)
+            {
+                if (quick)
+                {
+                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("RL" + i.ToString() + "r"), "time", 0));
+                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, -30f), 0);
+                }
+                else
+                {
+                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("RL" + i.ToString() + "r"), "time", speed));
+                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, -30f), speed);
+                }
+            }
+        }
+
+        GameObject[] newAr = new GameObject[currentReceived.Length];
+
+        for (int i = 1; i < currentReceived.Length; i++)
+        {
+            newAr[i - 1] = currentReceived[i];
+
+        }
+
+        currentReceived = newAr;
+
+
+        if (receiveStack_more.Count > 0)
+        {
+            instantiateMoreReceiveCard(6);
+        }
+        else
+        {
+            currentReceived[6] = null;
+
+        }
+        if (!quick) StartCoroutine(waitAnimation());
+    }
+
     void shiftRight()
     {
         if (currentCards[6] != null)
@@ -333,9 +384,9 @@ public class SecondLevel : MonoBehaviour
                 iTween.RotateAdd(currentCards[i], new Vector3(0, 0, -30f), speed);
             }
         }
-        
+
         GameObject[] newAr = new GameObject[currentCards.Length];
-        for (int i = currentCards.Length-2; i > -1; i--)
+        for (int i = currentCards.Length - 2; i > -1; i--)
         {
             newAr[i + 1] = currentCards[i];
         }
@@ -350,6 +401,50 @@ public class SecondLevel : MonoBehaviour
             currentCards[0] = null;
         }
         StartCoroutine(waitAnimation());
+    }
+
+    [RPC]
+    void shiftRightReceive(bool quick)
+    {
+        if (currentReceived[6] != null)
+        {
+            receiveStack_more.Push(currentReceived[6].GetComponentInChildren<CardSet>().index);
+            DestroyObject(currentReceived[6]);
+            currentReceived[6] = null;
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            if (currentReceived[i] != null)
+            {
+                if (quick)
+                {
+                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("LR" + i.ToString() + "r"), "time", 0));
+                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, 30f), 0);
+                }
+                else
+                {
+                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("LR" + i.ToString() + "r"), "time", speed));
+                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, 30f), speed);
+                }
+            }
+        }
+
+        GameObject[] newAr = new GameObject[currentReceived.Length];
+        for (int i = currentReceived.Length - 2; i > -1; i--)
+        {
+            newAr[i + 1] = currentReceived[i];
+        }
+        currentReceived = newAr;
+
+        if (receiveStack_less.Count > 0)
+        {
+            instantiateLessReceiveCard(0);
+        }
+        else
+        {
+            currentReceived[0] = null;
+        }
+        if (!quick) StartCoroutine(waitAnimation());
     }
 
     IEnumerator waitAnimation()
@@ -403,6 +498,21 @@ public class SecondLevel : MonoBehaviour
         }
     }
 
+    void instantiateLessReceiveCard(int index)
+    {
+        cardTemplate.GetComponentInChildren<CardSet>().setCard(receiveStack_less.Pop());
+        currentReceived[index] = Instantiate(cardTemplate, cardPositionsReceived[index], cardAnglesReceived[index]) as GameObject;
+        currentReceived[index].GetComponentInChildren<BackCard>().disableObject();
+        if (!currentReceived[index].GetComponentInChildren<CardSet>().rare)
+        {
+            currentReceived[index].GetComponentInChildren<RareCard>().disableRare();
+        }
+        else
+        {
+            currentReceived[index].GetComponentInChildren<RareCard>().enableRare();
+        }
+    }
+
     public void StartServer()
     {
         if (!serverStarted)
@@ -424,12 +534,22 @@ public class SecondLevel : MonoBehaviour
     {
         if (connected)
         {
-            networkView.RPC("ReceiveCards", RPCMode.Others, sendCards);
+            networkView.RPC("ReceiveCards", RPCMode.Others, sendCards, currentIndex);
         }
     }
 
+    void shiftLeftSend()
+    {
+        networkView.RPC("shiftLeftReceive", RPCMode.Others, false);
+    }
+
+    void shiftRightSend()
+    {
+        networkView.RPC("shiftRightReceive", RPCMode.Others, false);
+    }
+
     [RPC]
-    public void ReceiveCards(string cards)
+    public void ReceiveCards(string cards, int index)
     {
         List<int> received = new List<int>();
         if (cards != null)
@@ -451,5 +571,18 @@ public class SecondLevel : MonoBehaviour
         initCardAnglesReceived();
 
         layoutReceivedCards(receiveStack_more.Count);
+
+        StartCoroutine(waitReceive(index));
     }
+
+    IEnumerator waitReceive(int index)
+    {
+        while (index > 0)
+        {
+            shiftLeftReceive(true);
+            index--;
+            yield return new WaitForSeconds(1.0f / 10);
+        }
+    }
+
 }
