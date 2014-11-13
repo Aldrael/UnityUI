@@ -31,11 +31,16 @@ public class SecondLevel : MonoBehaviour
     bool serverStarted = false;
     string sendCards;
     bool connected = false;
+    bool receivedCards = false;
 
     public ShowCards showCards;
     DeckScript deck;
     public int currentIndex;
 
+    public GameObject offerHolder, receiveHolder, acceptHolder, waitHolder;
+    public bool offer, receiveOffer;
+    bool ignoreToggle;
+    bool accept, receiveAccept;
     // Use this for initialization
     void Start()
     {
@@ -58,6 +63,14 @@ public class SecondLevel : MonoBehaviour
         showCards = GameObject.Find("ShowCards").GetComponent<ShowCards>();
         showCards.DisableObject();
         currentIndex = 0;
+        receiveHolder.SetActive(false);
+        acceptHolder.SetActive(false);
+        waitHolder.SetActive(false);
+        offer = false;
+        receiveOffer = false;
+        ignoreToggle = false;
+        accept = false;
+        receiveAccept = false;
     }
 
     // Update is called once per frame
@@ -65,8 +78,17 @@ public class SecondLevel : MonoBehaviour
     {
         if (Input.GetKey("escape"))
             Application.LoadLevel(0);
-        if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null) && !zoomed)
+        if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null) && !zoomed && !accept)
         {
+            if (offerHolder.GetComponent<Toggle>().isOn) {
+                cancelOffer();
+            }
+            
+            if (receiveAccept)
+            {
+                networkView.RPC("CancelDeal", RPCMode.Others);
+                receiveAccept = false;
+            }
             inAnimation = true;
             released = false;
             shiftLeft();
@@ -77,8 +99,14 @@ public class SecondLevel : MonoBehaviour
         {
             released = true;
         }
-        if (Input.GetKey("right") && released && !inAnimation && (currentCards[2] != null) && !zoomed)
+        if (Input.GetKey("right") && released && !inAnimation && (currentCards[2] != null) && !zoomed && !accept)
         {
+            if (offerHolder.GetComponent<Toggle>().isOn) cancelOffer();
+            if (receiveAccept)
+            {
+                networkView.RPC("CancelDeal", RPCMode.Others);
+                receiveAccept = false;
+            }
             inAnimation = true;
             released = false;
             shiftRight();
@@ -99,7 +127,23 @@ public class SecondLevel : MonoBehaviour
             iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomOut"), "time", 1f));
             zoomed = false;
         }
-
+        if (offer && receiveOffer && !accept)
+        {
+            acceptHolder.SetActive(true);
+        }
+        else
+        {
+            acceptHolder.SetActive(false);
+        }
+        if (accept && receiveAccept)
+        {
+            print("traded");
+            accept = false;
+            receiveAccept = false;
+            cancelOffer();
+            receiveOffer = false;
+            waitHolder.SetActive(false);
+        }
     }
 
     [RPC]
@@ -322,6 +366,7 @@ public class SecondLevel : MonoBehaviour
     [RPC]
     void shiftLeftReceive(bool quick)
     {
+        if (!receivedCards) return;
         if (currentReceived[0] != null)
         {
             receiveStack_less.Push(currentReceived[0].GetComponentInChildren<CardSet>().index);
@@ -406,6 +451,7 @@ public class SecondLevel : MonoBehaviour
     [RPC]
     void shiftRightReceive(bool quick)
     {
+        if (!receivedCards) return;
         if (currentReceived[6] != null)
         {
             receiveStack_more.Push(currentReceived[6].GetComponentInChildren<CardSet>().index);
@@ -554,6 +600,7 @@ public class SecondLevel : MonoBehaviour
         List<int> received = new List<int>();
         if (cards != null)
         {
+            receivedCards = true;
             foreach (string card in cards.Split(','))
             {
                 int num;
@@ -585,4 +632,76 @@ public class SecondLevel : MonoBehaviour
         }
     }
 
+    public void toggleOffer()
+    {
+        if (ignoreToggle)
+        {
+            ignoreToggle = false;
+            return;
+        }
+        if (accept || receiveAccept)
+        {
+            offerHolder.GetComponent<Toggle>().isOn = !offerHolder.GetComponent<Toggle>().isOn;
+            return;
+        }
+        if (!offer)
+        {
+            offer = true;
+            networkView.RPC("ReceiveOffer", RPCMode.Others, offer);
+        }
+        else
+        {
+            offer = false;
+            networkView.RPC("ReceiveOffer", RPCMode.Others, offer);
+            if (receiveAccept)
+            {
+                networkView.RPC("CancelDeal", RPCMode.Others);
+                receiveAccept = false;
+            }
+        }
+    }
+
+    void cancelOffer()
+    {
+        offer = false;
+        ignoreToggle = true;
+        networkView.RPC("ReceiveOffer", RPCMode.Others, false);
+        offerHolder.GetComponent<Toggle>().isOn = false;
+    }
+
+    [RPC]
+    void ReceiveOffer(bool offer)
+    {
+        if (offer)
+        {
+            receiveOffer = true;
+            receiveHolder.SetActive(true);
+        }
+        else
+        {
+            receiveOffer = false;
+            receiveHolder.SetActive(false);
+        }
+    }
+
+    public void AcceptClicked()
+    {
+        accept = true;
+        waitHolder.SetActive(true);
+        networkView.RPC("ReceiveAccept", RPCMode.Others);
+    }
+
+    [RPC]
+    void ReceiveAccept()
+    {
+        receiveAccept = true;
+    }
+
+    [RPC]
+    void CancelDeal()
+    {
+        accept = false;
+        waitHolder.SetActive(false);
+        cancelOffer();
+    }
 }
