@@ -23,7 +23,7 @@ public class SecondLevel : MonoBehaviour
     float speed;
     Stack<int> cardStack_more, receiveStack_more;
     Stack<int> cardStack_less, receiveStack_less;
-    bool zoomed;
+    bool zoomed, receiveZoomed;
     //server
     int playerCount = 8;
     int serverPort = 23467;
@@ -41,6 +41,8 @@ public class SecondLevel : MonoBehaviour
     public bool offer, receiveOffer;
     bool ignoreToggle;
     bool accept, receiveAccept;
+    bool readyForCards;
+    bool inTrade;
     // Use this for initialization
     void Start()
     {
@@ -71,6 +73,9 @@ public class SecondLevel : MonoBehaviour
         ignoreToggle = false;
         accept = false;
         receiveAccept = false;
+        readyForCards = true;
+        receiveZoomed = false;
+        inTrade = false;
     }
 
     // Update is called once per frame
@@ -117,15 +122,27 @@ public class SecondLevel : MonoBehaviour
         {
             released = true;
         }
-        if (Input.GetKeyDown("up") && !zoomed)
+        if (Input.GetKeyDown("down") && !zoomed && !receiveZoomed)
         {
             iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomIn"), "time", 1f));
             zoomed = true;
         }
-        else if (Input.GetKeyDown("up") && zoomed)
+        else if (Input.GetKeyDown("down") && zoomed && !receiveZoomed)
         {
             iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomOut"), "time", 1f));
             zoomed = false;
+        }
+        if (Input.GetKeyDown("up") && !receiveZoomed && !zoomed)
+        {
+            iTween.MoveTo(currentReceived[3], iTween.Hash("path", iTweenPath.GetPath("ReceiveZoomIn"), "time", 1f));
+            iTween.RotateTo(currentReceived[3], new Vector3(0, 0, 0), 1f);
+            receiveZoomed = true;
+        }
+        else if (Input.GetKeyDown("up") && receiveZoomed && !zoomed)
+        {
+            iTween.MoveTo(currentReceived[3], iTween.Hash("path", iTweenPath.GetPath("ReceiveZoomOut"), "time", 1f));
+            iTween.RotateTo(currentReceived[3], new Vector3(0, 180f, 180f), 1f);
+            receiveZoomed = false;
         }
         if (offer && receiveOffer && !accept)
         {
@@ -135,14 +152,20 @@ public class SecondLevel : MonoBehaviour
         {
             acceptHolder.SetActive(false);
         }
-        if (accept && receiveAccept)
+        if (accept && receiveAccept && !inTrade)
         {
-            print("traded");
-            accept = false;
-            receiveAccept = false;
-            cancelOffer();
-            receiveOffer = false;
-            waitHolder.SetActive(false);
+            inTrade = true;
+            zoomed = false;
+            receiveZoomed = false;
+            iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("CurrentTrade"), "time", 1));
+            iTween.RotateTo(currentCards[3], new Vector3(0, 180f, 180f), 1);
+            iTween.MoveTo(currentReceived[3], iTween.Hash("path", iTweenPath.GetPath("ReceiveTrade"), "time", 1));
+            iTween.RotateTo(currentReceived[3], new Vector3(0, 0, 0), 1);
+            GameObject temp = new GameObject();
+            temp = currentCards[3];
+            currentCards[3] = currentReceived[3];
+            currentReceived[3] = temp;
+            StartCoroutine(WaitForTrade());
         }
     }
 
@@ -384,8 +407,8 @@ public class SecondLevel : MonoBehaviour
                 }
                 else
                 {
-                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("RL" + i.ToString() + "r"), "time", speed));
-                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, -30f), speed);
+                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("RL" + i.ToString() + "r"), "time", speed - 0.1f));
+                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, -30f), speed - 0.1f);
                 }
             }
         }
@@ -469,8 +492,8 @@ public class SecondLevel : MonoBehaviour
                 }
                 else
                 {
-                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("LR" + i.ToString() + "r"), "time", speed));
-                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, 30f), speed);
+                    iTween.MoveTo(currentReceived[i], iTween.Hash("path", iTweenPath.GetPath("LR" + i.ToString() + "r"), "time", speed - 0.1f));
+                    iTween.RotateAdd(currentReceived[i], new Vector3(0, 0, 30f), speed - 0.1f);
                 }
             }
         }
@@ -598,8 +621,9 @@ public class SecondLevel : MonoBehaviour
     public void ReceiveCards(string cards, int index)
     {
         List<int> received = new List<int>();
-        if (cards != null)
+        if (cards != null && readyForCards)
         {
+            readyForCards = false;
             receivedCards = true;
             foreach (string card in cards.Split(','))
             {
@@ -607,19 +631,21 @@ public class SecondLevel : MonoBehaviour
                 if (int.TryParse(card, out num))
                     received.Add(num);
             }
+
+            cardsReceived = received.ToArray();
+
+            currentReceived = new GameObject[7];
+            receiveStack_more = new Stack<int>(cardsReceived);
+            receiveStack_less = new Stack<int>();
+
+            initCardPositionsReceive();
+            initCardAnglesReceived();
+
+            layoutReceivedCards(receiveStack_more.Count);
+
+            StartCoroutine(waitReceive(index));
         }
-        cardsReceived = received.ToArray();
-
-        currentReceived = new GameObject[7];
-        receiveStack_more = new Stack<int>(cardsReceived);
-        receiveStack_less = new Stack<int>();
-
-        initCardPositionsReceive();
-        initCardAnglesReceived();
-
-        layoutReceivedCards(receiveStack_more.Count);
-
-        StartCoroutine(waitReceive(index));
+        
     }
 
     IEnumerator waitReceive(int index)
@@ -637,6 +663,12 @@ public class SecondLevel : MonoBehaviour
         if (ignoreToggle)
         {
             ignoreToggle = false;
+            return;
+        }
+        if (!receivedCards)
+        {
+            ignoreToggle = true;
+            offerHolder.GetComponent<Toggle>().isOn = false;
             return;
         }
         if (accept || receiveAccept)
@@ -670,9 +702,9 @@ public class SecondLevel : MonoBehaviour
     }
 
     [RPC]
-    void ReceiveOffer(bool offer)
+    void ReceiveOffer(bool receive)
     {
-        if (offer)
+        if (receive)
         {
             receiveOffer = true;
             receiveHolder.SetActive(true);
@@ -694,7 +726,34 @@ public class SecondLevel : MonoBehaviour
     [RPC]
     void ReceiveAccept()
     {
+        if(!accept)
         receiveAccept = true;
+        else
+        {
+            inTrade = true;
+            zoomed = false;
+            receiveZoomed = false;
+            iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("CurrentTrade"), "time", 1));
+            iTween.RotateTo(currentCards[3], new Vector3(0, 180f, 180f), 1);
+            iTween.MoveTo(currentReceived[3], iTween.Hash("path", iTweenPath.GetPath("ReceiveTrade"), "time", 1));
+            iTween.RotateTo(currentReceived[3], new Vector3(0, 0, 0), 1);
+            GameObject temp = new GameObject();
+            temp = currentCards[3];
+            currentCards[3] = currentReceived[3];
+            currentReceived[3] = temp;
+            StartCoroutine(WaitForTrade());
+        }
+    }
+
+    IEnumerator WaitForTrade()
+    {
+        yield return new WaitForSeconds(1);
+        accept = false;
+        receiveAccept = false;
+        cancelOffer();
+        receiveOffer = false;
+        waitHolder.SetActive(false);
+        inTrade = false;
     }
 
     [RPC]

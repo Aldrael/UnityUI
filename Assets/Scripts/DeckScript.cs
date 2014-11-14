@@ -9,6 +9,7 @@ public class DeckScript : MonoBehaviour {
 	void Start () {
         gameObject.tag = "Deck";
         cardsObtained = new List<int>();
+        cardsObtained.Add(Random.Range(0, 14));   //Extra
         DontDestroyOnLoad(this);
 	}
 
