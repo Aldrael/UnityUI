@@ -48,7 +48,6 @@ public class SecondLevel : MonoBehaviour
     {
         deck = GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>();
         cardsObtained = deck.cardsObtained.ToArray();
-
         currentCards = new GameObject[7];
         cardStack_more = new Stack<int>(deck.cardsObtained);
         cardStack_less = new Stack<int>();
@@ -82,7 +81,9 @@ public class SecondLevel : MonoBehaviour
     void Update()
     {
         if (Input.GetKey("escape"))
+        {
             Application.LoadLevel(0);
+        }
         if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null) && !zoomed && !accept)
         {
             if (offerHolder.GetComponent<Toggle>().isOn) {

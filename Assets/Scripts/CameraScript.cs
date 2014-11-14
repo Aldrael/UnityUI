@@ -10,7 +10,7 @@ public class CameraScript : MonoBehaviour
     private bool mute;
     private float current_volume;
     public GameObject[] cards, boosterpacks;
-    public GameObject doneholder, newholder, packholder, cutholder;
+    public GameObject doneholder, newholder, packholder, cutholder, deckHolder;
     public int cards_up, cardsSelected;
     public List<int> cardsObtained;
     public Texture2D cursorTexture;
@@ -52,6 +52,7 @@ public class CameraScript : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        deckHolder.SetActive(false);
         boosterStartPosition = packholder.transform.position;
         mute = false;
         current_volume = 0.25f;
@@ -244,7 +245,13 @@ public class CameraScript : MonoBehaviour
 
     public void ChangeScene(int scene)
     {
-        GameObject.FindGameObjectWithTag("Deck").GetComponent<DeckScript>().saveCards(cardsObtained);
+        if (GameObject.Find("Deck") == null)
+        {
+            deckHolder.SetActive(true);
+        }
+        GameObject deck = GameObject.FindGameObjectWithTag("Deck");
+        deck.GetComponent<DeckScript>().saveCards(cardsObtained);
+        DontDestroyOnLoad(deck);
         StartCoroutine(ChangeLevel(scene));
     }
 
