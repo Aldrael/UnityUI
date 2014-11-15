@@ -12,7 +12,7 @@ public class CameraScript : MonoBehaviour
     public GameObject[] cards, boosterpacks;
     public GameObject doneholder, newholder, packholder, cutholder, deckHolder;
     public int cards_up, cardsSelected;
-    public List<int> cardsObtained;
+    //public List<int> cardsObtained;
     public Texture2D cursorTexture;
     public CursorMode cursorMode = CursorMode.Auto;
     public Vector2 hotSpot = Vector2.zero;
@@ -49,10 +49,16 @@ public class CameraScript : MonoBehaviour
     int serverPort = 23467;
     bool useNAT = false;
     bool serverStarted = false;
+    DeckScript deck;
     // Use this for initialization
     void Start()
     {
         deckHolder.SetActive(false);
+        if (GameObject.Find("Deck") == null)
+        {
+            deckHolder.SetActive(true);
+        }
+        deck = GameObject.Find("Deck").GetComponent<DeckScript>();
         boosterStartPosition = packholder.transform.position;
         mute = false;
         current_volume = 0.25f;
@@ -71,7 +77,7 @@ public class CameraScript : MonoBehaviour
             card.GetComponent<MainCard>().initializePositions(positions);
         }
         disableAllCards();
-        cardsObtained = new List<int>();
+        //cardsObtained = new List<int>();
         newCardFlag = false;
         AudioListener.pause = false;
 
@@ -245,12 +251,8 @@ public class CameraScript : MonoBehaviour
 
     public void ChangeScene(int scene)
     {
-        if (GameObject.Find("Deck") == null)
-        {
-            deckHolder.SetActive(true);
-        }
         GameObject deck = GameObject.FindGameObjectWithTag("Deck");
-        deck.GetComponent<DeckScript>().saveCards(cardsObtained);
+        //deck.GetComponent<DeckScript>().SaveCards(cardsObtained);
         DontDestroyOnLoad(deck);
         StartCoroutine(ChangeLevel(scene));
     }
@@ -369,7 +371,8 @@ public class CameraScript : MonoBehaviour
 
     public void addCard(int index)
     {
-        cardsObtained.Add(index);
+        //cardsObtained.Add(index);
+        deck.SaveCard(index);
     }
 
     public void changeRotateAllCards()
