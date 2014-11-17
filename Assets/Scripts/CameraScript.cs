@@ -50,6 +50,7 @@ public class CameraScript : MonoBehaviour
     bool useNAT = false;
     bool serverStarted = false;
     DeckScript deck;
+    Packs packs;
 
     //
 
@@ -103,6 +104,7 @@ public class CameraScript : MonoBehaviour
         inSelectionMove = false;
         notInZone = true;
 
+        packs = GameObject.Find("Packs").GetComponent<Packs>();
     }
 
     void Update()
@@ -451,6 +453,8 @@ public class CameraScript : MonoBehaviour
         inScaling = false;
         Destroy(piece);
         iTween.MoveTo(packholder, boosterStartPosition, 0f);
+        yield return new WaitForSeconds(0.1f);
+        packs.haloOn = true;
     }
 
     public void disableBooster(int index)
