@@ -8,10 +8,12 @@ public class Packs : MonoBehaviour
     Vector3 screenPoint;
     Vector3 offset;
     CameraScript cs;
+    Tracer tr;
     // Use this for initialization
     void Start()
     {
         cs = GameObject.Find("_Manager").GetComponent<CameraScript>();
+        tr = GameObject.Find("TrailRenderer").GetComponent<Tracer>();
     }
 
     // Update is called once per frame
@@ -19,10 +21,14 @@ public class Packs : MonoBehaviour
     {
         if (gameObject.transform.localPosition.x > -30f && gameObject.transform.localPosition.x < 30f &&
             gameObject.transform.localPosition.y > -30f && gameObject.transform.localPosition.y < 30f)
+        {
             cs.notInZone = false;
+            tr.inZone = true;
+        }
         else
         {
             cs.notInZone = true;
+            tr.inZone = false;
         }
     }
 

@@ -50,6 +50,9 @@ public class CameraScript : MonoBehaviour
     bool useNAT = false;
     bool serverStarted = false;
     DeckScript deck;
+
+    //
+
     // Use this for initialization
     void Start()
     {
@@ -59,6 +62,7 @@ public class CameraScript : MonoBehaviour
             deckHolder.SetActive(true);
         }
         deck = GameObject.Find("Deck").GetComponent<DeckScript>();
+
         boosterStartPosition = packholder.transform.position;
         mute = false;
         current_volume = 0.25f;
@@ -98,7 +102,7 @@ public class CameraScript : MonoBehaviour
         cardsSelected = 0;
         inSelectionMove = false;
         notInZone = true;
-        //Cursor.SetCursor(cursorTexture, hotSpot, cursorMode);
+
     }
 
     void Update()
@@ -140,7 +144,6 @@ public class CameraScript : MonoBehaviour
         }
 
         cutPacks();
-
     }
 
     IEnumerator waitFlip(GameObject card, float waitTime)
