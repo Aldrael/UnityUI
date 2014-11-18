@@ -9,7 +9,7 @@ public class DeckScript : MonoBehaviour {
     public string aStringObject = "test";
     public float aFloatValue = 43.2f;
     DeckScript deck;
-
+    public int bankAmount = 100;
 	// Use this for initialization
 	void Start () {
         gameObject.tag = "Deck";
@@ -51,6 +51,7 @@ public class DeckScript : MonoBehaviour {
         //Now write our own state
         binaryWriter.Write(aStringObject);
         binaryWriter.Write(aFloatValue);
+        binaryWriter.Write(bankAmount);
         binaryWriter.Write(saveCards);
 
         binaryWriter.Write(this.gameObject.name);
@@ -58,6 +59,7 @@ public class DeckScript : MonoBehaviour {
 
     public void ReadObjectState(BinaryReader binaryReader)
     {
+        CameraScript manager = GameObject.Find("_Manager").GetComponent<CameraScript>();
         //Get the subObjects count
         int simpleSubCount = binaryReader.ReadInt32();
         for (int subCount = 0; subCount < simpleSubCount; subCount++)
@@ -70,6 +72,7 @@ public class DeckScript : MonoBehaviour {
 
         this.aStringObject = binaryReader.ReadString();
         this.aFloatValue = binaryReader.ReadSingle();
+        int bankAmount = binaryReader.ReadInt32();
 
         List<int> received = new List<int>();
         string cards = binaryReader.ReadString();
@@ -82,6 +85,8 @@ public class DeckScript : MonoBehaviour {
 
             SaveCards(received);
 
+            this.bankAmount = bankAmount;
+            manager.SetBankText(bankAmount);
         this.gameObject.name = binaryReader.ReadString();
 
     }

@@ -49,18 +49,17 @@ public class CameraScript : MonoBehaviour
     int serverPort = 23467;
     bool useNAT = false;
     bool serverStarted = false;
-    DeckScript deck;
+    public DeckScript deck;
     Packs packs;
     //
     bool ignoreMute;
-    public int bankAmount;
+
     Text bank;
     // Use this for initialization
     void Start()
     {
         //ignoreMute = true;
         mute = false;
-        
         deckHolder.SetActive(false);
         if (GameObject.Find("Deck") == null)
         {
@@ -110,9 +109,8 @@ public class CameraScript : MonoBehaviour
 
         packs = GameObject.Find("Packs").GetComponent<Packs>();
 
-        bankAmount = 100;
         bank = GameObject.Find("BankAmount").GetComponent<Text>();
-        SetBankText(bankAmount);
+        SetBankText(deck.bankAmount);
     }
 
     void Update()
@@ -403,10 +401,11 @@ public class CameraScript : MonoBehaviour
         {
             return;
         }
-        if (currentPack == 0 && bankAmount < 10 || currentPack == 1 && bankAmount < 8 || currentPack == 2 && bankAmount < 11)
+        if (currentPack == 0 && deck.bankAmount < 10 || currentPack == 1 && deck.bankAmount < 8 || currentPack == 2 && deck.bankAmount < 11)
         {
             return;
         }
+        deck = GameObject.Find("Deck").GetComponent<DeckScript>();
         mousePos = Input.mousePosition;
         mousePos.z = startPositionPack.z;
         Vector3 currentMousePosition = Camera.main.ScreenToWorldPoint(mousePos);

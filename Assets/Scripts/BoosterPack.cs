@@ -31,20 +31,20 @@ public class BoosterPack : MonoBehaviour
         if (manager.currentPack == 0)
         {
             FloatingText.Show("-$10!", "PointStarText", new FromWorldPointTextPositioner(Camera.main, new Vector3(0, 0, 500f), 1.75f, 50));
-            manager.bankAmount -= 10;
-            manager.SetBankText(manager.bankAmount);
+            manager.deck.bankAmount -= 10;
+            manager.SetBankText(manager.deck.bankAmount);
         }
         else if (manager.currentPack == 1)
         {
             FloatingText.Show("-$8!", "PointStarText", new FromWorldPointTextPositioner(Camera.main, new Vector3(0, 0, 500f), 1.75f, 50));
-            manager.bankAmount -= 8;
-            manager.SetBankText(manager.bankAmount);
+            manager.deck.bankAmount -= 8;
+            manager.SetBankText(manager.deck.bankAmount);
         }
         else
         {
             FloatingText.Show("-$11!", "PointStarText", new FromWorldPointTextPositioner(Camera.main, new Vector3(0, 0, 500f), 1.75f, 50));
-            manager.bankAmount -= 11;
-            manager.SetBankText(manager.bankAmount);
+            manager.deck.bankAmount -= 11;
+            manager.SetBankText(manager.deck.bankAmount);
         }
         //print("Sliced");
         //rigidbody2D.AddForce(new Vector2( (Random.Range(-200f,200f)) , (Random.Range(1000f,10000f))));
