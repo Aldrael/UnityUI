@@ -28,6 +28,24 @@ public class BoosterPack : MonoBehaviour
 
     void OnSpriteSliced(SpriteSlicer2DSliceInfo sliceInfo)
     {
+        if (manager.currentPack == 0)
+        {
+            FloatingText.Show("-$10!", "PointStarText", new FromWorldPointTextPositioner(Camera.main, new Vector3(0, 0, 500f), 1.75f, 50));
+            manager.bankAmount -= 10;
+            manager.SetBankText(manager.bankAmount);
+        }
+        else if (manager.currentPack == 1)
+        {
+            FloatingText.Show("-$8!", "PointStarText", new FromWorldPointTextPositioner(Camera.main, new Vector3(0, 0, 500f), 1.75f, 50));
+            manager.bankAmount -= 8;
+            manager.SetBankText(manager.bankAmount);
+        }
+        else
+        {
+            FloatingText.Show("-$11!", "PointStarText", new FromWorldPointTextPositioner(Camera.main, new Vector3(0, 0, 500f), 1.75f, 50));
+            manager.bankAmount -= 11;
+            manager.SetBankText(manager.bankAmount);
+        }
         //print("Sliced");
         //rigidbody2D.AddForce(new Vector2( (Random.Range(-200f,200f)) , (Random.Range(1000f,10000f))));
         packs.haloOn = false;
@@ -48,8 +66,8 @@ public class BoosterPack : MonoBehaviour
             float mass = piece.GetComponent<Rigidbody2D>().mass;
             int randomx = Random.Range(0, 2);
             float forcex;
-            lowrange = (1000 * mass) / loop;
-            highrange = (10000 * mass) / loop;
+            lowrange = (1000 * mass);
+            highrange = (10000 * mass);
 
             if (randomx == 0)
             {
@@ -59,10 +77,18 @@ public class BoosterPack : MonoBehaviour
             {
                 forcex = (Random.Range(lowrange, highrange));
             }
-            piece.GetComponent<Rigidbody2D>().AddForce(new Vector2(forcex, (Random.Range(lowrange, highrange))));
-            //piece.AddComponent<BoosterPack>();
-            //Transform tr = piece.GetComponent<Transform>();
-            //piece.GetComponent<MeshRenderer>().renderer.enabled = false;
+            int randomy = Random.Range(0, 2);
+            float forcey;
+            if (randomy == 0)
+            {
+                forcey = (Random.Range(-highrange, -lowrange));
+            }
+            else
+            {
+                forcey = (Random.Range(lowrange, highrange));
+            }
+            piece.GetComponent<Rigidbody2D>().AddForce(new Vector2(forcex, forcey));
+
             loop++;
            // StartCoroutine(vanish(tr));
         }

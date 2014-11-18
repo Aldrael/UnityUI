@@ -24,8 +24,8 @@ public class Packs : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (gameObject.transform.localPosition.x > -30f && gameObject.transform.localPosition.x < 30f &&
-            gameObject.transform.localPosition.y > -30f && gameObject.transform.localPosition.y < 30f)
+        if (gameObject.transform.localPosition.x > -25f && gameObject.transform.localPosition.x < 25f &&
+            gameObject.transform.localPosition.y > -25f && gameObject.transform.localPosition.y < 25f)
         {
             cs.notInZone = false;
             tr.inZone = true;

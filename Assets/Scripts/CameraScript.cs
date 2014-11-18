@@ -51,12 +51,16 @@ public class CameraScript : MonoBehaviour
     bool serverStarted = false;
     DeckScript deck;
     Packs packs;
-
     //
-
+    bool ignoreMute;
+    public int bankAmount;
+    Text bank;
     // Use this for initialization
     void Start()
     {
+        //ignoreMute = true;
+        mute = false;
+        
         deckHolder.SetActive(false);
         if (GameObject.Find("Deck") == null)
         {
@@ -65,7 +69,7 @@ public class CameraScript : MonoBehaviour
         deck = GameObject.Find("Deck").GetComponent<DeckScript>();
 
         boosterStartPosition = packholder.transform.position;
-        mute = false;
+       
         current_volume = 0.25f;
         AudioListener.volume = current_volume;
         cards_up = 0;
@@ -105,6 +109,10 @@ public class CameraScript : MonoBehaviour
         notInZone = true;
 
         packs = GameObject.Find("Packs").GetComponent<Packs>();
+
+        bankAmount = 100;
+        bank = GameObject.Find("BankAmount").GetComponent<Text>();
+        SetBankText(bankAmount);
     }
 
     void Update()
@@ -240,6 +248,7 @@ public class CameraScript : MonoBehaviour
 
     public void MuteToggle()
     {
+
         if (mute)
         {
             //AudioListener.volume = current_volume;
@@ -391,6 +400,10 @@ public class CameraScript : MonoBehaviour
     public void cutPacks()
     {
         if (inScaling || inBoosterMove || notInZone)
+        {
+            return;
+        }
+        if (currentPack == 0 && bankAmount < 10 || currentPack == 1 && bankAmount < 8 || currentPack == 2 && bankAmount < 11)
         {
             return;
         }
@@ -584,6 +597,11 @@ public class CameraScript : MonoBehaviour
                 Debug.Log("Couldn't initialize server! " + state);
             }
         }
+    }
+
+    public void SetBankText(int amount)
+    {
+        bank.text = string.Format("Bank: ${0}", amount);
     }
 
 }
