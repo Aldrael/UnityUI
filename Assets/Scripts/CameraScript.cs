@@ -12,7 +12,6 @@ public class CameraScript : MonoBehaviour
     public GameObject[] cards, boosterpacks;
     public GameObject doneholder, newholder, packholder, cutholder, deckHolder;
     public int cards_up, cardsSelected;
-    //public List<int> cardsObtained;
     public Texture2D cursorTexture;
     public CursorMode cursorMode = CursorMode.Auto;
     public Vector2 hotSpot = Vector2.zero;
@@ -55,10 +54,11 @@ public class CameraScript : MonoBehaviour
     bool ignoreMute;
 
     Text bank;
+
     // Use this for initialization
     void Start()
     {
-        //ignoreMute = true;
+
         mute = false;
         deckHolder.SetActive(false);
         if (GameObject.Find("Deck") == null)
@@ -85,11 +85,10 @@ public class CameraScript : MonoBehaviour
             card.GetComponent<MainCard>().initializePositions(positions);
         }
         disableAllCards();
-        //cardsObtained = new List<int>();
+
         newCardFlag = false;
         AudioListener.pause = false;
 
-        //booster = GameObject.Find("LOBBooster");
         booster = GameObject.FindGameObjectWithTag("Boosterpack");
         startPositionPack = booster.transform.position;
 
@@ -124,7 +123,7 @@ public class CameraScript : MonoBehaviour
             resetAllCards();
             enableCut();
             packholder.GetComponent<BoxCollider>().enabled = true;
-            //newholder.GetComponent<NewCard>().toggleNew();
+
             enableBooster();
             foreach (GameObject packButton in packButtons)
             {
@@ -249,13 +248,11 @@ public class CameraScript : MonoBehaviour
 
         if (mute)
         {
-            //AudioListener.volume = current_volume;
             AudioListener.pause = false;
             mute = false;
         }
         else
         {
-            //AudioListener.volume = 0;
             AudioListener.pause = true;
             mute = true;
         }
@@ -264,7 +261,6 @@ public class CameraScript : MonoBehaviour
     public void ChangeScene(int scene)
     {
         GameObject deck = GameObject.FindGameObjectWithTag("Deck");
-        //deck.GetComponent<DeckScript>().SaveCards(cardsObtained);
         DontDestroyOnLoad(deck);
         StartCoroutine(ChangeLevel(scene));
     }
@@ -289,7 +285,6 @@ public class CameraScript : MonoBehaviour
 
     public void randomizeAllCards()
     {
-        // cards = GameObject.FindGameObjectsWithTag("Card");
         foreach (GameObject card in cards)
         {
             RandomCard randomCard = card.GetComponent<RandomCard>();
@@ -303,7 +298,6 @@ public class CameraScript : MonoBehaviour
         if (cards_up >= 5)
         {
             doneholder.GetComponent<DoneButton>().toggleDone();
-            //cards_up = 0;
         }
     }
 
@@ -322,18 +316,7 @@ public class CameraScript : MonoBehaviour
 
     IEnumerator enableWait()
     {
-        /*
-        foreach (GameObject card in cards)
-        {
-            card.GetComponent<MainCard>().enableCard();
-            float time = 0;
-            while (time < 0.5f)
-            {
-                time += Time.deltaTime;
-                yield return new WaitForSeconds(1.0f / 60);
-            }
-        }
-         */
+
         for (int i = 0; i < cards.Length; i++)
         {
             cards[i].GetComponent<MainCard>().enableCard(i);
@@ -369,7 +352,6 @@ public class CameraScript : MonoBehaviour
         foreach (GameObject card in cards)
         {
             card.GetComponent<FlipCard>().SpeedSlide(speed);
-           // card.GetComponent<MainCard>().SpeedSlide(speed);
         }
     }
 
@@ -383,7 +365,6 @@ public class CameraScript : MonoBehaviour
 
     public void addCard(int index)
     {
-        //cardsObtained.Add(index);
         deck.SaveCard(index);
     }
 
@@ -409,7 +390,7 @@ public class CameraScript : MonoBehaviour
         mousePos = Input.mousePosition;
         mousePos.z = startPositionPack.z;
         Vector3 currentMousePosition = Camera.main.ScreenToWorldPoint(mousePos);
-        //print(currentMousePosition);
+
         if (Input.GetMouseButton(0))
         {
             if (!mousePressed)
@@ -423,15 +404,8 @@ public class CameraScript : MonoBehaviour
         else if (mousePressed)
         {
             
-            //SpriteSlicer2D.SliceSprite(mouseStartPosition, currentMousePosition, booster, true,ref cuts);
             SpriteSlicer2D.SliceAllSprites(mouseStartPosition, currentMousePosition, false, ref cuts);
-            /*
-            GameObject[] packs = GameObject.FindGameObjectsWithTag("Boosterpack");
-            foreach (GameObject pack in packs)
-            {
-                pack.GetComponent<Rigidbody2D>().AddForce(new Vector2(100f, 10000f));
-            }
-            */
+   
             mousePressed = false;
         }
     }
@@ -488,23 +462,13 @@ public class CameraScript : MonoBehaviour
 
     public void increPack()
     {
-        /*
-        if (inBoosterMove)
-        {
-            return;
-        }
-        */
+
         int previous = currentPack++;
         if (currentPack > boosterpacks.Length - 1) currentPack = 0;
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
         disableBooster(previous);
-        /*
-        
-        iTween.MoveTo(boosterpacks[currentPack], iTween.Hash("path", iTweenPath.GetPath("ForwardPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
-        iTween.MoveTo(boosterpacks[previous], iTween.Hash("path", iTweenPath.GetPath("NextPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
-        StartCoroutine(waitMove(previous));
-        */
+   
     }
 
     IEnumerator waitMove(int previous)
@@ -517,23 +481,13 @@ public class CameraScript : MonoBehaviour
 
     public void decrePack()
     {
-        /*
-        if (inBoosterMove)
-        {
-            return;
-        }
-        */
+  
         int previous = currentPack--;
         if (currentPack < 0) currentPack = boosterpacks.Length - 1;
         enableBooster();
         packText.GetComponent<Text>().text = "Current Pack: " + boosterpacks[currentPack].name;
         disableBooster(previous);
-        /*
-        
-        iTween.MoveTo(boosterpacks[currentPack], iTween.Hash("path", iTweenPath.GetPath("PreviousPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
-        iTween.MoveTo(boosterpacks[previous], iTween.Hash("path", iTweenPath.GetPath("BackPath"), "time", 1, "easetype", iTween.EaseType.easeInOutSine));
-        StartCoroutine(waitMove(previous));
-        */
+
     }
 
     public void initBoosters()
