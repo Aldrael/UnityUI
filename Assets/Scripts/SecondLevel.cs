@@ -18,7 +18,6 @@ public class SecondLevel : MonoBehaviour
     Quaternion[] cardAngles, cardAnglesReceived;
 
     GameObject[] currentCards, currentReceived;
-    bool released;
     bool inAnimation;
     float speed;
     Stack<int> cardStack_more, receiveStack_more;
@@ -57,7 +56,6 @@ public class SecondLevel : MonoBehaviour
         initCardAngles();
 
         layoutCards(cardStack_more.Count);
-        released = true;
         inAnimation = false;
         speed = 0.75f;
         zoomed = false;
@@ -84,45 +82,15 @@ public class SecondLevel : MonoBehaviour
         {
             Application.LoadLevel(0);
         }
-        if (Input.GetKey("left") && released && !inAnimation && (currentCards[4] != null) && !zoomed && !accept)
+        if (Input.GetKeyDown("left"))
         {
-            if (offerHolder.GetComponent<Toggle>().isOn) {
-                cancelOffer();
-            }
-            
-            if (receiveAccept)
-            {
-                networkView.RPC("CancelDeal", RPCMode.Others);
-                receiveAccept = false;
-            }
-            inAnimation = true;
-            released = false;
-            shiftLeft();
-            currentIndex++;
-            if (connected) shiftLeftSend();
+            ShiftLeftMain();
         }
-        if (Input.GetKeyUp("left"))
+        if (Input.GetKeyDown("right"))
         {
-            released = true;
+            ShiftRightMain();
         }
-        if (Input.GetKey("right") && released && !inAnimation && (currentCards[2] != null) && !zoomed && !accept)
-        {
-            if (offerHolder.GetComponent<Toggle>().isOn) cancelOffer();
-            if (receiveAccept)
-            {
-                networkView.RPC("CancelDeal", RPCMode.Others);
-                receiveAccept = false;
-            }
-            inAnimation = true;
-            released = false;
-            shiftRight();
-            currentIndex--;
-            if (connected) shiftRightSend();
-        }
-        if (Input.GetKeyUp("right"))
-        {
-            released = true;
-        }
+
         if (Input.GetKeyDown("down") && !zoomed && !receiveZoomed)
         {
             iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomIn"), "time", 1f));
@@ -167,6 +135,75 @@ public class SecondLevel : MonoBehaviour
             currentCards[3] = currentReceived[3];
             currentReceived[3] = temp;
             StartCoroutine(WaitForTrade());
+        }
+    }
+
+    public void ShiftLeftMain()
+    {
+        if (!inAnimation && (currentCards[4] != null) && !zoomed && !accept)
+        {
+            if (offerHolder.GetComponent<Toggle>().isOn)
+            {
+                cancelOffer();
+            }
+
+            if (receiveAccept)
+            {
+                networkView.RPC("CancelDeal", RPCMode.Others);
+                receiveAccept = false;
+            }
+            inAnimation = true;
+ 
+            shiftLeft();
+            currentIndex++;
+            if (connected) shiftLeftSend();
+        }
+    }
+
+    public void ShiftRightMain()
+    {
+        if (!inAnimation && (currentCards[2] != null) && !zoomed && !accept)
+        {
+            if (offerHolder.GetComponent<Toggle>().isOn) cancelOffer();
+            if (receiveAccept)
+            {
+                networkView.RPC("CancelDeal", RPCMode.Others);
+                receiveAccept = false;
+            }
+            inAnimation = true;
+
+            shiftRight();
+            currentIndex--;
+            if (connected) shiftRightSend();
+        }
+    }
+
+    public void ButtonMyZoom() {
+        if (!zoomed && !receiveZoomed)
+        {
+            iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomIn"), "time", 1f));
+            zoomed = true;
+        }
+        else if (zoomed && !receiveZoomed)
+        {
+            iTween.MoveTo(currentCards[3], iTween.Hash("path", iTweenPath.GetPath("ZoomOut"), "time", 1f));
+            zoomed = false;
+        }
+    }
+
+    public void ButtonYourZoom()
+    {
+        if (!receiveZoomed && !zoomed)
+        {
+            iTween.MoveTo(currentReceived[3], iTween.Hash("path", iTweenPath.GetPath("ReceiveZoomIn"), "time", 1f));
+            iTween.RotateTo(currentReceived[3], new Vector3(0, 0, 0), 1f);
+            receiveZoomed = true;
+        }
+        else if (receiveZoomed && !zoomed)
+        {
+            iTween.MoveTo(currentReceived[3], iTween.Hash("path", iTweenPath.GetPath("ReceiveZoomOut"), "time", 1f));
+            iTween.RotateTo(currentReceived[3], new Vector3(0, 180f, 180f), 1f);
+            receiveZoomed = false;
         }
     }
 

@@ -6,20 +6,26 @@ using UnityEngine.UI;
 
 public class CameraScript : MonoBehaviour
 {
-
-    private bool mute;
-    private float current_volume;
     public GameObject[] cards, boosterpacks;
     public GameObject doneholder, newholder, packholder, cutholder, deckHolder;
     public int cards_up, cardsSelected;
     public Texture2D cursorTexture;
     public CursorMode cursorMode = CursorMode.Auto;
     public Vector2 hotSpot = Vector2.zero;
-
     public Texture2D fadeOutTexture;
     public float fadeSpeed = 0.8f;
-
     public bool newCardFlag;
+    public bool inScaling;
+    public int currentPack;
+    public GameObject packText;
+    GameObject[] packButtons;
+    public bool inBoosterMove;
+    public bool inSelectionMove;
+    public bool notInZone;
+    public Vector3 boosterStartPosition;
+
+    private bool mute;
+    private float current_volume;
 
     int drawDepth = -1000;
     float alpha = 1.0f;
@@ -33,15 +39,6 @@ public class CameraScript : MonoBehaviour
 
     const float boosterscale = 1f;
     const float newCardDelay = 0.1f;
-
-    public bool inScaling;
-    public int currentPack;
-    public GameObject packText;
-    GameObject[] packButtons;
-    public bool inBoosterMove;
-    public bool inSelectionMove;
-    public bool notInZone;
-    public Vector3 boosterStartPosition;
 
     //server
     int playerCount = 8;
